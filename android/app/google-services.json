@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "350518272438",
+    "project_id": "wallbaduk",
+    "storage_bucket": "wallbaduk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350518272438:android:dcf690f50a8a91503f6117",
+        "android_client_info": {
+          "package_name": "com.example.wall_badu_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA43JnvRTrCch4tZfR-gRmrmPt15Qpg70Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350518272438:android:5346d152d669d4623f6117",
+        "android_client_info": {
+          "package_name": "com.imtak.wall_baduk_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA43JnvRTrCch4tZfR-gRmrmPt15Qpg70Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

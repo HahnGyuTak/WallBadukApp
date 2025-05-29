@@ -1,0 +1,46 @@
+컬렉션:
+    rooms/
+        문서:
+            abcd/
+                서브컬렉션:
+                    moves/
+                    placements/
+                    walls/
+                필드 :
+                    createdAt:2025년 5월 28일 오전 1시 5분 7초 UTC+9
+                    placementPhase : true
+                    playerA : "3L1yIZlztJfoQzSsPmIKHCD3pTD2"
+                    playerB : "mdeAtKI78Fewj4bppmqxMbPaRzH3"
+                    players(배열):
+                        0 : "3L1yIZlztJfoQzSsPmIKHCD3pTD2"
+                        1 : "mdeAtKI78Fewj4bppmqxMbPaRzH3"
+                    turn : "A"
+    queue/
+        문서:
+            user1/
+                timestamp:2025년 5월 23일 오후 6시 39분 10초 UTC+9
+    users/
+        문서:
+            user1/
+                서브컬렉션:
+                    matchHistory/
+                        문서:
+                            a/
+                                필드:
+                                    opponent : "~~"
+                                    result : "lose"
+                                    timestamp : 2025년 5월 23일 오후 6시 36분 10초 UTC+9
+                            b/
+                            ...
+                필드:
+                    createdAt : 2025년 5월 23일 오후 5시 48분 55초 UTC+9
+                    draw : 0
+                    losses : 12
+                    nickname : "tds"
+                    score : 960
+                    wins : 4
+            user2/
+            user3/
+            ...
+            
+
