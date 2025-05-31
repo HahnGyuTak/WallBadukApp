@@ -6,6 +6,11 @@ import 'game_page.dart';
 import '../services/room_service.dart';
 import 'room_waiting_page.dart';
 
+Future<int> getSelectedThemeIndex() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getInt('selectedThemeIndex') ?? 0;
+}
+
 
 class RoomModePage extends StatefulWidget {
   const RoomModePage({super.key});
@@ -39,10 +44,11 @@ class _RoomModePageState extends State<RoomModePage> {
       return;
     }
     final (roomId, playerId) = await RoomService.createManualRoom(currentUser.uid);
+    final themeIndex = await getSelectedThemeIndex();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => RoomWaitingPage(roomId: roomId, playerId: playerId),
+        builder: (_) => RoomWaitingPage(roomId: roomId, playerId: playerId, selectedThemeIndex: themeIndex),
       ),
     );
 
@@ -58,6 +64,7 @@ class _RoomModePageState extends State<RoomModePage> {
     if (currentUser == null) return;
     final playerId = currentUser.uid;
     final joinedId = await RoomService.joinExistingRoom(code, playerId);
+    final themeIndex = await getSelectedThemeIndex();
 
     if (joinedId != null) {
       Navigator.push(
@@ -67,6 +74,7 @@ class _RoomModePageState extends State<RoomModePage> {
             mode: GameMode.onlineManual,
             roomId: code,
             playerId: joinedId,
+            selectedThemeIndex: themeIndex,
           ),
         ),
       ).then((_) => RoomService.leaveRoom(code, joinedId));

@@ -97,22 +97,26 @@ class _MainMenuPageState extends State<MainMenuPage> {
             Image.asset('lib/img/text/title.png', width: 280),
             const SizedBox(height: 60),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 _playButtonSound();
+                final prefs = await SharedPreferences.getInstance();
+                final _selectedThemeIndex = prefs.getInt('selectedThemeIndex') ?? 0;
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => GamePage(mode: GameMode.local2P)),
+                  MaterialPageRoute(builder: (_) => GamePage(mode: GameMode.local2P, selectedThemeIndex: _selectedThemeIndex)),
                 );
               },
               child: Image.asset('lib/img/button/2p_button.png', width: 150),
             ),
             const SizedBox(height: 16),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 _playButtonSound();
+                // final prefs = await SharedPreferences.getInstance();
+                // final selectedThemeIndex = prefs.getInt('selectedThemeIndex') ?? 0;
                 // Navigator.push(
                 //   context,
-                //   MaterialPageRoute(builder: (_) => MatchingPage()),
+                //   MaterialPageRoute(builder: (_) => MatchingPage(selectedThemeIndex: selectedThemeIndex)),
                 // );
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

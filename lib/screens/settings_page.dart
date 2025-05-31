@@ -16,6 +16,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _soundEnabled = true;
   double _soundVolume = 0.5;
   String _nickname = '';
+  int _selectedThemeIndex = 0;
 
   final TextEditingController _nicknameController = TextEditingController();
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -28,11 +29,27 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    int storedIndex = prefs.getInt('selectedThemeIndex') ?? 0;
+    // 현재 DropdownMenuItem 개수
+    const int themeCount = 2;
+    if (storedIndex < 0 || storedIndex >= themeCount) {
+      storedIndex = 0;
+      await prefs.setInt('selectedThemeIndex', 0);
+    }
     setState(() {
       _soundEnabled = prefs.getBool('soundEnabled') ?? true;
       _soundVolume = prefs.getDouble('soundVolume') ?? 0.5;
       _nickname = prefs.getString('nickname') ?? '';
       _nicknameController.text = _nickname;
+      _selectedThemeIndex = prefs.getInt('selectedThemeIndex') ?? 0;
+    });
+  }
+
+  Future<void> _updateThemeIndex(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('selectedThemeIndex', index);
+    setState(() {
+      _selectedThemeIndex = index;
     });
   }
 
@@ -140,6 +157,59 @@ class _SettingsPageState extends State<SettingsPage> {
             Divider(color: Colors.brown.shade700),
             ListTile(
               title: const Text(
+                '게임 테마 선택',
+                style: TextStyle(
+                  fontFamily: 'ChungjuKimSaeng',
+                  color: Colors.white,
+                ),
+              ),
+              subtitle: DropdownButton<int>(
+                value: _selectedThemeIndex,
+                dropdownColor: const Color(0xFF1E1A17),
+                isExpanded: false,
+                items: [
+                  DropdownMenuItem(value: 0, 
+                    child: Row(
+                      children: [
+                        Image.asset(
+                            'lib/img/theme/theme1/playerA.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Image.asset(
+                            'lib/img/theme/theme1/playerB.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                      ],
+                    )
+                  ),
+                  DropdownMenuItem(value: 1, 
+                    child: Row(
+                      children: [
+                        Image.asset(
+                            'lib/img/theme/theme2/playerA.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Image.asset(
+                            'lib/img/theme/theme2/playerB.png',
+                            width: 24,
+                            height: 24,
+                          ),
+                      ],
+                    )
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) _updateThemeIndex(value);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text(
                 '닉네임 변경',
                 style: TextStyle(
                   fontFamily: 'ChungjuKimSaeng',
@@ -151,9 +221,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   Expanded(
                     child: TextField(
                       controller: _nicknameController,
-                      decoration: const InputDecoration(
-                        hintText: '닉네임을 입력하세요',
-                        hintStyle: TextStyle(
+                      decoration: InputDecoration(
+                        hintText: _nickname,
+                        hintStyle: const TextStyle(
                           fontFamily: 'ChungjuKimSaeng',
                           color: Colors.white70,
                         ),

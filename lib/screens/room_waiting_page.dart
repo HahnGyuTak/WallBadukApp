@@ -11,8 +11,10 @@ import 'package:audioplayers/audioplayers.dart';
 class RoomWaitingPage extends StatefulWidget {
   final String roomId;
   final String playerId;
+  final int selectedThemeIndex;
 
-  const RoomWaitingPage({required this.roomId, required this.playerId});
+
+  const RoomWaitingPage({required this.roomId, required this.playerId, required this.selectedThemeIndex});
 
   @override
   State<RoomWaitingPage> createState() => _RoomWaitingPageState();
@@ -53,6 +55,7 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
                 mode: GameMode.onlineManual,
                 roomId: widget.roomId,
                 playerId: widget.playerId,
+                selectedThemeIndex: widget.selectedThemeIndex,
               ),
             ),
           );

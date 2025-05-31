@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../screens/game_page.dart';
+import 'package:wall_badu_app/screens/game_page.dart';
+import 'package:wall_badu_app/services/game_themes.dart';
+
 
 class Scoreboard extends StatelessWidget {
   final int seconds;
@@ -7,6 +9,7 @@ class Scoreboard extends StatelessWidget {
   final GameMode mode;
   final Player currentTurn;
   final Player? myPlayer;
+  final int selectedThemeIndex;
 
   const Scoreboard({
     Key? key,
@@ -14,8 +17,13 @@ class Scoreboard extends StatelessWidget {
     required this.instruction,
     required this.mode,
     required this.currentTurn,
+    required this.selectedThemeIndex,
     this.myPlayer,
   }) : super(key: key);
+
+
+  GameTheme get currentTheme => availableThemes[selectedThemeIndex];
+
 
   @override
   Widget build(BuildContext context) {
@@ -88,8 +96,8 @@ class Scoreboard extends StatelessWidget {
               );
               if (mode == GameMode.local2P) {
                 final img = currentTurn == Player.A
-                  ? 'lib/img/theme/theme3/playerA.png'
-                  : 'lib/img/theme/theme3/playerB.png';
+                  ? currentTheme.playerAImagePath //currentTheme.playerAImagePath
+                  : currentTheme.playerBImagePath;
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -110,8 +118,8 @@ class Scoreboard extends StatelessWidget {
                   ));
                 }
                 final img = myPlayer == Player.A
-                  ? 'lib/img/theme/theme3/playerA.png'
-                  : 'lib/img/theme/theme3/playerB.png';
+                  ? currentTheme.playerAImagePath
+                  : currentTheme.playerBImagePath;
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

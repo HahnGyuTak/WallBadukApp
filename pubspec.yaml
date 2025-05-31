@@ -81,6 +81,20 @@ flutter:
     - lib/img/text/text_room_gold.png
     
     # 게임 말, 벽 이미지 소스
+    - lib/img/theme/theme1/playerA.png
+    - lib/img/theme/theme1/playerB.png
+    - lib/img/theme/theme1/wallB_row.png
+    - lib/img/theme/theme1/wallA_row.png
+    - lib/img/theme/theme1/wallB_col.png
+    - lib/img/theme/theme1/wallA_col.png
+
+    - lib/img/theme/theme2/playerA.png
+    - lib/img/theme/theme2/playerB.png
+    - lib/img/theme/theme2/wallB_row.png
+    - lib/img/theme/theme2/wallA_row.png
+    - lib/img/theme/theme2/wallB_col.png
+    - lib/img/theme/theme2/wallA_col.png
+
     - lib/img/theme/theme3/playerA.png
     - lib/img/theme/theme3/playerB.png
     - lib/img/theme/theme3/wallB_row.png
@@ -88,6 +102,12 @@ flutter:
     - lib/img/theme/theme3/wallB_col.png
     - lib/img/theme/theme3/wallA_col.png
     
+    - lib/img/theme/theme4/playerA.png
+    - lib/img/theme/theme4/playerB.png
+    - lib/img/theme/theme4/wallB_row.png
+    - lib/img/theme/theme4/wallA_row.png
+    - lib/img/theme/theme4/wallB_col.png
+    - lib/img/theme/theme4/wallA_col.png
 
     # 게임판 이미지 소스
     - lib/img/display_bi.png

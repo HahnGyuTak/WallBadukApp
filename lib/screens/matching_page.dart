@@ -8,8 +8,11 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+
+
 class MatchingPage extends StatefulWidget {
-  const MatchingPage({super.key});
+    final int selectedThemeIndex;
+  const MatchingPage({super.key, required this.selectedThemeIndex});
 
   @override
   State<MatchingPage> createState() => _MatchingPageState();
@@ -58,6 +61,7 @@ class _MatchingPageState extends State<MatchingPage> {
             mode: GameMode.onlineMatching,
             roomId: roomId,
             playerId: playerId,
+            selectedThemeIndex: widget.selectedThemeIndex,
           ),
         ),
            );

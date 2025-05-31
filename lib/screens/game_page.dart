@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wall_badu_app/services/game_themes.dart';
 import '../services/user_service.dart';
 import '../widgets/scoreboard.dart';
 
@@ -28,16 +29,18 @@ class GamePage extends StatefulWidget {
   final GameMode mode;
   final String? roomId;
   final String? playerId; // 👈 여기 추가
+  final int selectedThemeIndex;
 
   
 
-  const GamePage({required this.mode, this.roomId, this.playerId});
+  const GamePage({required this.mode, this.roomId, this.playerId, required this.selectedThemeIndex});
 
   @override
   _GamePageState createState() => _GamePageState();
 }
 
 class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
+  late int selectedThemeIndex;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   Future<void> _playPlayerSound() async {
@@ -151,14 +154,13 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   void _placeRandomWall() {
-    // Use the last moved piece if available
+    // If there is a last moved piece, attempt to place near it
     if (lastMovedRow != null && lastMovedCol != null) {
       List<String> directions = ['top', 'bottom', 'left', 'right'];
       directions.shuffle();
 
       for (String dir in directions) {
         final key = wallKey(lastMovedRow!, lastMovedCol!, dir);
-
         final delta = {
           'top': [-1, 0, 'bottom'],
           'bottom': [1, 0, 'top'],
@@ -171,49 +173,93 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         String opposite = d[2] as String;
         final neighborKey = wallKey(neighborRow, neighborCol, opposite);
 
-        bool inBounds = neighborRow >= 0 && neighborRow < boardSize && neighborCol >= 0 && neighborCol < boardSize;
-        if (!walls.containsKey(key) && (!inBounds || !walls.containsKey(neighborKey))) {
+        bool inBounds = neighborRow >= 0 &&
+                        neighborRow < boardSize &&
+                        neighborCol >= 0 &&
+                        neighborCol < boardSize;
+        if (!walls.containsKey(key) &&
+            (!inBounds || !walls.containsKey(neighborKey))) {
           isAwaitingWall = false;
-          
           _placeWall(dir);
           return;
         }
       }
     }
 
-    // Fallback: random piece if last moved piece is not usable
-    List<Piece> candidates = pieces.where((p) => p.owner == currentTurnPlayer).toList();
-    if (candidates.isEmpty) return;
-    final randomPiece = (candidates..shuffle()).first;
-
-    lastMovedRow = randomPiece.row;
-    lastMovedCol = randomPiece.col;
-
-    List<String> directions = ['top', 'bottom', 'left', 'right'];
-    directions.shuffle();
-
-    for (String dir in directions) {
-      final key = wallKey(lastMovedRow!, lastMovedCol!, dir);
-
-      final delta = {
+    // If no last moved piece or no valid direction from it, pick another piece
+    // Gather all pieces of current player that have at least one valid direction for a wall
+    List<Piece> candidates = [];
+    for (var piece in pieces.where((p) => p.owner == currentTurnPlayer)) {
+      int r = piece.row;
+      int c = piece.col;
+      Map<String, List> delta = {
         'top': [-1, 0, 'bottom'],
         'bottom': [1, 0, 'top'],
         'left': [0, -1, 'right'],
         'right': [0, 1, 'left'],
       };
-      final d = delta[dir]!;
-      int neighborRow = lastMovedRow! + (d[0] as int);
-      int neighborCol = lastMovedCol! + (d[1] as int);
-      String opposite = d[2] as String;
-      final neighborKey = wallKey(neighborRow, neighborCol, opposite);
 
-      bool inBounds = neighborRow >= 0 && neighborRow < boardSize && neighborCol >= 0 && neighborCol < boardSize;
-      if (!walls.containsKey(key) && (!inBounds || !walls.containsKey(neighborKey))) {
-        isAwaitingWall = false;
-        _placeWall(dir);
-        break;
+      bool hasValid = false;
+      for (var entry in delta.entries) {
+        String dir = entry.key;
+        final d = entry.value;
+        int nr = r + (d[0] as int);
+        int nc = c + (d[1] as int);
+        String opp = d[2] as String;
+        final key = wallKey(r, c, dir);
+        final neighborKey = wallKey(nr, nc, opp);
+        bool inBounds = nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize;
+        if (!walls.containsKey(key) &&
+            (!inBounds || !walls.containsKey(neighborKey))) {
+          hasValid = true;
+          break;
+        }
+      }
+      if (hasValid) {
+        candidates.add(piece);
       }
     }
+
+    // If no piece can place a wall, do nothing
+    if (candidates.isEmpty) return;
+
+    // Randomly select one piece from candidates
+    final randomPiece = (candidates..shuffle()).first;
+    int pr = randomPiece.row;
+    int pc = randomPiece.col;
+
+    // Build valid directions for that piece
+    List<String> validDirs = [];
+    Map<String, List> delta = {
+      'top': [-1, 0, 'bottom'],
+      'bottom': [1, 0, 'top'],
+      'left': [0, -1, 'right'],
+      'right': [0, 1, 'left'],
+    };
+    for (var entry in delta.entries) {
+      String dir = entry.key;
+      final d = entry.value;
+      int nr = pr + (d[0] as int);
+      int nc = pc + (d[1] as int);
+      String opp = d[2] as String;
+      final key = wallKey(pr, pc, dir);
+      final neighborKey = wallKey(nr, nc, opp);
+      bool inBounds = nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize;
+      if (!walls.containsKey(key) &&
+          (!inBounds || !walls.containsKey(neighborKey))) {
+        validDirs.add(dir);
+      }
+    }
+
+    // Randomly select one valid direction
+    validDirs.shuffle();
+    final selectedDir = validDirs.first;
+
+    // Update lastMovedRow/Col so _placeWall works correctly
+    lastMovedRow = pr;
+    lastMovedCol = pc;
+    isAwaitingWall = false;
+    _placeWall(selectedDir);
   }
 
   void _debugCheckRoomSubcollections() async {
@@ -243,13 +289,16 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     }
   }
 
+  late final GameTheme currentTheme;
   void initState() {
     super.initState();
+    // Load saved theme before any logic
+    selectedThemeIndex = widget.selectedThemeIndex;
     highlightController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 800),
     );
-
+    currentTheme = availableThemes[selectedThemeIndex];
     if (widget.mode != GameMode.local2P) {
       _loadPlayerNames();
       _waitForPlayers();
@@ -679,7 +728,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   void _handleMovePhaseTap(int row, int col) {
-  // 🔒 내 차례인지 확인 (온라인 모드만)
+    // 🔒 내 차례인지 확인 (온라인 모드만)
     if (widget.mode != GameMode.local2P && currentTurnPlayer != myPlayer) return;
 
     if (isAwaitingWall) return;
@@ -689,6 +738,15 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
     if (selected) {
       final movable = getMovablePositions(selectedRow!, selectedCol!);
+      // If tapped the same piece again and no moves exist, switch to wall placement mode
+      if (row == selectedRow && col == selectedCol && movable.isEmpty) {
+        setState(() {
+          lastMovedRow = row;
+          lastMovedCol = col;
+          isAwaitingWall = true;
+        });
+        return;
+      }
       final isValidMove = movable.any((pos) => pos[0] == row && pos[1] == col);
 
       if (isValidMove) {
@@ -992,9 +1050,9 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         }
         Color? color;
         if (regionPlayers.contains(Player.A)) {
-          color = Colors.red.shade100;
+          color = currentTheme.playerAColor;
         } else if (regionPlayers.contains(Player.B)) {
-          color = Colors.blue.shade100;
+          color = currentTheme.playerBColor;
         }
         if (color != null) {
           await _startRegionRevealAnimation(region, color, delayPerCell);
@@ -1320,7 +1378,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Image.asset(
-                                      'lib/img/theme/theme3/playerA.png',
+                                      currentTheme.playerAImagePath,
                                       width: 24, height: 24,
                                     ),
                                     const SizedBox(width: 6),
@@ -1377,7 +1435,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                     ),
                                     const SizedBox(width: 6),
                                     Image.asset(
-                                      'lib/img/theme/theme3/playerB.png',
+                                      currentTheme.playerBImagePath,
                                       width: 24, height: 24,
                                     ),
                                   ],
@@ -1399,6 +1457,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                             mode: widget.mode,
                             currentTurn: currentTurnPlayer,
                             myPlayer: myPlayer,
+                            selectedThemeIndex: widget.selectedThemeIndex,
                           ),
                         ),
                       ),
@@ -1464,12 +1523,12 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                       bool isRowWall = direction == 'top' || direction == 'bottom';
                                       if (isRowWall) {
                                         imagePath = owner == Player.A
-                                            ? 'lib/img/theme/theme3/wallA_col.png'
-                                            : 'lib/img/theme/theme3/wallB_col.png';
+                                            ? currentTheme.wallAColImagePath
+                                            : currentTheme.wallBColImagePath;
                                       } else {
                                         imagePath = owner == Player.A
-                                            ? 'lib/img/theme/theme3/wallA_row.png'
-                                            : 'lib/img/theme/theme3/wallB_row.png';
+                                            ? currentTheme.wallARowImagePath
+                                            : currentTheme.wallBRowImagePath;
                                       }
 
                                       double left = col * cellSize;
@@ -1515,8 +1574,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                             margin: EdgeInsets.all(cellSize * 0.2),
                                             child: Image.asset(
                                               piece.owner == Player.A
-                                                  ? 'lib/img/theme/theme3/playerA.png'
-                                                  : 'lib/img/theme/theme3/playerB.png',
+                                                  ? currentTheme.playerAImagePath
+                                                  : currentTheme.playerBImagePath,
                                               fit: BoxFit.contain,
                                             ),
                                           ),
@@ -1670,14 +1729,14 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                       children: [
                                                         Image.asset(
                                                           updatedAcount > updatedBcount
-                                                              ? 'lib/img/theme/theme3/playerA.png'
-                                                              : 'lib/img/theme/theme3/playerB.png',
+                                                              ? currentTheme.playerAImagePath
+                                                              : currentTheme.playerBImagePath,
                                                           width: 36,
                                                           height: 36,
                                                         ),
                                                         const SizedBox(width: 8),
                                                         Text(
-                                                          '승리!',
+                                                          updatedAcount == updatedBcount ? "무승부" : '승리!',
                                                           style: TextStyle(
                                                             fontSize: 24,
                                                             fontWeight: FontWeight.bold,
@@ -1691,7 +1750,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Image.asset(
-                                                          'lib/img/theme/theme3/playerA.png',
+                                                          currentTheme.playerAImagePath,
                                                           width: 28,
                                                           height: 28,
                                                         ),
@@ -1712,7 +1771,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                         ),
                                                         const SizedBox(width: 4),
                                                         Image.asset(
-                                                          'lib/img/theme/theme3/playerB.png',
+                                                          currentTheme.playerBImagePath,
                                                           width: 28,
                                                           height: 28,
                                                         ),
@@ -1740,8 +1799,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                 final winner = updatedAcount > updatedBcount ? Player.A : Player.B;
                                                 final winnerName = updatedAcount > updatedBcount ? playerAName : playerBName;
                                                 final winnerImage = updatedAcount > updatedBcount
-                                                    ? 'lib/img/theme/theme3/playerA.png'
-                                                    : 'lib/img/theme/theme3/playerB.png';
+                                                    ? currentTheme.playerAImagePath
+                                                    : currentTheme.playerBImagePath;
                                                 return Column(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
@@ -1764,7 +1823,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                     Row(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
-                                                        Image.asset('lib/img/theme/theme3/playerA.png', width: 28, height: 28),
+                                                        Image.asset(currentTheme.playerAImagePath, width: 28, height: 28),
                                                         const SizedBox(width: 4),
                                                         Text('$updatedAcount', style: TextStyle(fontSize: 20, color: Colors.white)),
                                                         const SizedBox(width: 10),
@@ -1772,7 +1831,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                         const SizedBox(width: 10),
                                                         Text('$updatedBcount', style: TextStyle(fontSize: 20, color: Colors.white)),
                                                         const SizedBox(width: 4),
-                                                        Image.asset('lib/img/theme/theme3/playerB.png', width: 28, height: 28),
+                                                        Image.asset(currentTheme.playerBImagePath, width: 28, height: 28),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 16),
