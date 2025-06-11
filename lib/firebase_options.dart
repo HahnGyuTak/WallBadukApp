@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,9 +28,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,19 +49,9 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyABhyaxUkCJok3KWb-aSP1XGwd5U-0X2WQ',
-    appId: '1:350518272438:web:d49c45dee65013633f6117',
-    messagingSenderId: '350518272438',
-    projectId: 'wallbaduk',
-    authDomain: 'wallbaduk.firebaseapp.com',
-    storageBucket: 'wallbaduk.firebasestorage.app',
-    measurementId: 'G-YVPJH50XVY',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA43JnvRTrCch4tZfR-gRmrmPt15Qpg70Y',
-    appId: '1:350518272438:android:dcf690f50a8a91503f6117',
+    appId: '1:350518272438:android:5346d152d669d4623f6117',
     messagingSenderId: '350518272438',
     projectId: 'wallbaduk',
     storageBucket: 'wallbaduk.firebasestorage.app',
@@ -60,29 +59,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD3cXynACM4Dl48Ud-vqhZCMwN6MeOAAbM',
-    appId: '1:350518272438:ios:e29039db112909c03f6117',
+    appId: '1:350518272438:ios:38d6679a10a7977b3f6117',
     messagingSenderId: '350518272438',
     projectId: 'wallbaduk',
     storageBucket: 'wallbaduk.firebasestorage.app',
-    iosBundleId: 'com.example.wallBaduApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD3cXynACM4Dl48Ud-vqhZCMwN6MeOAAbM',
-    appId: '1:350518272438:ios:e29039db112909c03f6117',
-    messagingSenderId: '350518272438',
-    projectId: 'wallbaduk',
-    storageBucket: 'wallbaduk.firebasestorage.app',
-    iosBundleId: 'com.example.wallBaduApp',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyABhyaxUkCJok3KWb-aSP1XGwd5U-0X2WQ',
-    appId: '1:350518272438:web:e3e5f9811a10c69f3f6117',
-    messagingSenderId: '350518272438',
-    projectId: 'wallbaduk',
-    authDomain: 'wallbaduk.firebaseapp.com',
-    storageBucket: 'wallbaduk.firebasestorage.app',
-    measurementId: 'G-RE2DRFWRRV',
+    iosBundleId: 'com.imtak.wallbaduk',
   );
 }

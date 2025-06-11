@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+3
+version: 1.0.5+4
 
 environment:
   sdk: ^3.8.0
@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   collection: ^1.17.2
   firebase_core: ^3.8.1
+  firebase_analytics: ^11.4.6
   cloud_firestore: ^5.6.8
   firebase_auth: ^5.5.4
   uuid: ^4.2.2 
@@ -39,11 +40,23 @@ dependencies:
   audioplayers: ^6.4.0   # 또는 최신 버전
   shared_preferences: ^2.5.3
   cloud_functions: ^5.5.1
+  package_info_plus: ^8.3.0
+  connectivity_plus: ^6.1.4       # 네트워크 상태 감지
+  google_sign_in: ^6.3.0
+  # audioplayers_darwin: ^6.2.0
+
+  flutter_localizations: 
+    sdk: flutter
+
+
+  # 문자열 리소스 번역 관리용 패키지
+  intl: ^0.20.2
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  games_services: ^4.1.1
 
 dev_dependencies:
   flutter_test:
@@ -63,17 +76,29 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true      # ★ 이 줄을 반드시 추가하세요
   assets:
     # 버튼
     - lib/img/button/2p_button.png
     - lib/img/button/online_button.png
     - lib/img/button/roomCreate_button.png
     - lib/img/button/in_button.png
+    - lib/img/button/ai_button.png
     - lib/img/button/create_button.png
+
+    # 영어버튼
+    - lib/img/button/2p_button_en.png
+    - lib/img/button/online_button_en.png
+    - lib/img/button/roomCreate_button_en.png
+    - lib/img/button/in_button_en.png
+    - lib/img/button/ai_button_en.png
+    - lib/img/button/create_button_en.png
 
     # 텍스트
     - lib/img/text/title.png
+    - lib/img/text/title_en.png
     - lib/img/text/text_2p_black.png
+    - lib/img/text/text_ai_black.png
     - lib/img/text/text_online_black.png
     - lib/img/text/text_room_black.png
     - lib/img/text/text_2p_gold.png
@@ -128,9 +153,14 @@ flutter:
     - assets/wall.mp3
 
 
-    - assets/legal/developer_info.txt
-    - assets/legal/terms_of_service.txt
-    - assets/legal/privacy_policy.txt
+    - assets/legal/developer_info_ko.txt
+    - assets/legal/developer_info_en.txt
+    - assets/legal/terms_of_service_ko.txt
+    - assets/legal/terms_of_service_en.txt
+    - assets/legal/privacy_policy_ko.txt
+    - assets/legal/privacy_policy_en.txt
+
+    - assets/google_logo.png
 
 
   fonts:
@@ -152,22 +182,22 @@ flutter:
   uses-material-design: true
 
 flutter_icons:
-  android: false
+  android: true
   ios: true
   image_path: "lib/img/app_icon.png"
 
 flutter_native_splash:
   color: "#ffffff"                    # 배경 색상
-  image: lib/img/app_icon.png  # 로고 이미지 (PNG 권장, 투명배경 가능)
+  image: assets/splash.png  # 로고 이미지 (PNG 권장, 투명배경 가능)
   android: true
   ios: false
   fullscreen: true                   # 로고가 전체 화면을 채우게 하고 싶다면 true
-  android_gravity: center            # 로고 위치: center, bottom, top 등
+  android_gravity: fill_vertical|fill_horizontal|clip_horizontal|center_horizontal  # 로고 위치: center, bottom, top 등
   ios_content_mode: scaleAspectFill  # iOS 스플래시 이미지 확대 옵션
 
-  android_12:
-    image: lib/img/app_icon.png
-    icon_background_color: "#ffffff"
+  # android_12:
+  #   image: lib/img/app_icon.png
+  #   icon_background_color: "#ffffff"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

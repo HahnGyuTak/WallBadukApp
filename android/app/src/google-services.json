@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "350518272438",
+    "project_id": "wallbaduk",
+    "storage_bucket": "wallbaduk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350518272438:android:5346d152d669d4623f6117",
+        "android_client_info": {
+          "package_name": "com.imtak.wall_baduk_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350518272438-ask1jaigg9m1sda6t7r9bhsnp19e9q6c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.imtak.wall_baduk_app",
+            "certificate_hash": "e5b9da4ead1a3e925004416c7cfef6b7cd5f0ee1"
+          }
+        },
+        {
+          "client_id": "350518272438-249alam7to7d58pj1g7bhd2795705rj2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA43JnvRTrCch4tZfR-gRmrmPt15Qpg70Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350518272438-249alam7to7d58pj1g7bhd2795705rj2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "350518272438-q1gjag6daford062gk69g32ovfv7e7od.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.imtak.wallbaduk"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

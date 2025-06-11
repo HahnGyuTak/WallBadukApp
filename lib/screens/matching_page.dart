@@ -6,7 +6,8 @@ import 'package:wall_badu_app/services/match_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:audioplayers/audioplayers.dart';
+import '../l10n/app_localizations.dart';
+
 
 
 
@@ -41,10 +42,10 @@ class _MatchingPageState extends State<MatchingPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       final credential = await FirebaseAuth.instance.signInAnonymously();
-      print('🆕 익명 로그인 완료: ${credential.user?.uid}');
+      debugPrint('🆕 익명 로그인 완료: ${credential.user?.uid}');
       userId = credential.user!.uid;
     } else {
-      print('✅ 로그인됨: ${user.uid}');
+      debugPrint('✅ 로그인됨: ${user.uid}');
       userId = user.uid;
     }
     _startMatching();
@@ -67,10 +68,11 @@ class _MatchingPageState extends State<MatchingPage> {
            );
     } on FirebaseFunctionsException catch (e) {
       if (e.code == 'unauthenticated') {
-        print('🚫 인증 오류로 매칭 취소');
+        debugPrint('🚫 인증 오류로 매칭 취소');
         await _cancelMatching();
       } else {
-        rethrow;
+        debugPrint('❌ 매칭 중 오류 발생: $e');
+        await _cancelMatching();
       }
     }
   }
@@ -97,9 +99,9 @@ class _MatchingPageState extends State<MatchingPage> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              "상대를 찾는 중...",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.findingOpponent,
+              style: const TextStyle(
                 fontFamily: 'ChungjuKimSaeng',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -128,7 +130,7 @@ class _MatchingPageState extends State<MatchingPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              child: const Text("취소"),
+              child: Text(AppLocalizations.of(context)!.cancelButton),
             ),
           ],
         ),

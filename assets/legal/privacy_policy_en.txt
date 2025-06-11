@@ -1,0 +1,24 @@
+Privacy Policy
+
+1. what personal information we collect
+- Unique user identifier (UID) collected through Firebase authentication
+- Nicknames entered by the user
+- Gameplay history and settings information
+
+2. Purpose of collecting and using personal information
+- Providing game services and identifying users
+- Saving settings, matching games, and analyzing errors
+
+3. Storage and destruction of personal information
+- It is securely stored in Firebase and can be requested to be deleted immediately when you stop using the service.
+
+4. Provision and outsourcing to third parties
+- The collected information is not provided to external parties and is processed through Google Firebase.
+
+5. User Rights
+- You can change your nickname, request data deletion, etc. via in-app settings or email.
+
+6. contact
+- Developer email: gue707@naver.com
+
+Last modified: May 28, 2025

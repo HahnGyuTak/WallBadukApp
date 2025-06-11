@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wall_badu_app/screens/game_page.dart';
 import 'package:wall_badu_app/services/game_themes.dart';
+import '../l10n/app_localizations.dart';
 
 
 class Scoreboard extends StatelessWidget {
@@ -74,7 +75,7 @@ class Scoreboard extends StatelessWidget {
               ),
               const SizedBox(width: 2),
               Text(
-                '초',
+                AppLocalizations.of(context)!.secondsSuffix,
                 style: TextStyle(
                   fontFamily: 'ChungjuKimSaeng',
                   fontSize: 18,
@@ -109,13 +110,16 @@ class Scoreboard extends StatelessWidget {
               } else {
                 final isMyTurn = currentTurn == myPlayer;
                 if (!isMyTurn) {
-                  return Text('상대방 플레이 중', style: TextStyle(
-                    fontFamily: 'ChungjuKimSaeng',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFD4AF37),
-                    shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
-                  ));
+                  return Text(
+                    AppLocalizations.of(context)!.opponentTurn,
+                    style: TextStyle(
+                      fontFamily: 'ChungjuKimSaeng',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFD4AF37),
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                    ),
+                  );
                 }
                 final img = myPlayer == Player.A
                   ? currentTheme.playerAImagePath

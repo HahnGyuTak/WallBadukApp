@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'game_page.dart';
+import '../l10n/app_localizations.dart';
 import '../services/room_service.dart';
 import 'room_waiting_page.dart';
 
@@ -20,6 +21,8 @@ class RoomModePage extends StatefulWidget {
 }
 
 class _RoomModePageState extends State<RoomModePage> {
+  late final String _imgSuffix;
+
   final AudioPlayer _audioPlayer = AudioPlayer();
   Future<void> _playButtonSound() async {
     final prefs = await SharedPreferences.getInstance();
@@ -35,6 +38,8 @@ class _RoomModePageState extends State<RoomModePage> {
 
   void initState(){
     super.initState();
+    final isEnLocale = WidgetsBinding.instance.window.locale.languageCode == 'en';
+    _imgSuffix = isEnLocale ? '_en' : '';
   }
 
   Future<void> _handleManualRoomCreation() async {
@@ -80,7 +85,7 @@ class _RoomModePageState extends State<RoomModePage> {
       ).then((_) => RoomService.leaveRoom(code, joinedId));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("해당 방이 존재하지 않습니다.")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.roomNotExist)),
       );
     }
   }
@@ -90,10 +95,27 @@ class _RoomModePageState extends State<RoomModePage> {
       backgroundColor: const Color(0xFF1E1A17),
       appBar: AppBar(
         iconTheme: IconThemeData(color: Color(0xFFD4AF37)), // ✅ 골드 메탈 색상 적용
-        title: Image.asset(
-          'lib/img/text/text_room_gold.png',
-          height: 32,
-        ),
+        title: Localizations.localeOf(context).languageCode == 'en'
+            ? Text(
+                'Room mode',
+                style: TextStyle(
+                  fontFamily: 'ChungjuKimSaeng',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFD4AF37),
+                  shadows: [
+                    Shadow(
+                      color: Color.fromARGB(255, 90, 83, 61),      // lighter shadow color for dark background
+                      blurRadius: 6,              // a bit more blur
+                      offset: Offset(2, 2),       // slight offset for depth
+                    ),
+                  ],
+                ),
+              )
+            : Image.asset(
+                'lib/img/text/text_room_gold.png',
+                height: 32,
+              ),
         centerTitle: true,
         backgroundColor: const Color(0xFF1E1A17),
       ),
@@ -133,7 +155,7 @@ class _RoomModePageState extends State<RoomModePage> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text("방 생성", style: const TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37), shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
+                                Text(AppLocalizations.of(context)!.createRoomTitle, style: const TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37), shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
                                 const SizedBox(height: 16),
                                 Expanded(
                                   child: Center(
@@ -143,9 +165,9 @@ class _RoomModePageState extends State<RoomModePage> {
                                         _handleManualRoomCreation();
                                       },
                                       child: Image.asset(
-                                        'lib/img/button/create_button.png',
+                                        'lib/img/button/create_button$_imgSuffix.png',
                                         fit: BoxFit.contain,
-                                        height: 60,
+                                        height: 50,
                                       ),
                                     ),
                                   ),
@@ -177,7 +199,7 @@ class _RoomModePageState extends State<RoomModePage> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text("방 입장", style: const TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37), shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
+                                Text(AppLocalizations.of(context)!.joinRoomTitle, style: const TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37), shadows: [Shadow(color: Colors.black54, blurRadius: 4)])),
                                 const SizedBox(height: 16),
                                 TextField(
                                   style: const TextStyle(
@@ -186,10 +208,11 @@ class _RoomModePageState extends State<RoomModePage> {
                                   ),
                                   controller: _roomCodeController,
                                   decoration: InputDecoration(
-                                    labelText: "방 코드 입력",
+                                    labelText: AppLocalizations.of(context)!.enterRoomCodeLabel,
                                     labelStyle: const TextStyle(
+                                      fontSize: 13,
                                       fontFamily: 'ChungjuKimSaeng',
-                                      color: Color(0xFFD4AF37), // 원하는 골드 메탈 색상
+                                      color: Color.fromARGB(122, 212, 175, 55), // 원하는 골드 메탈 색상
                                     ),
                                     floatingLabelStyle: const TextStyle(
                                       fontFamily: 'ChungjuKimSaeng',
@@ -211,7 +234,7 @@ class _RoomModePageState extends State<RoomModePage> {
                                     _joinRoom();
                                   },
                                   child: Image.asset(
-                                    'lib/img/button/in_button.png',
+                                    'lib/img/button/in_button$_imgSuffix.png',
                                     fit: BoxFit.contain,
                                     height: 50,
                                   ),

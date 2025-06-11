@@ -1,0 +1,6 @@
+arb-dir: lib/l10n                # ARB 파일이 위치한 경로
+template-arb-file: app_ko.arb    # 기본 템플릿(영어)
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+
+untranslated-messages-file: lib/l10n/untranslated_messages.json

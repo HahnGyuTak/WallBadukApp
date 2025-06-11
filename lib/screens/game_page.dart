@@ -4,17 +4,27 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wall_badu_app/services/game_themes.dart';
+import '../l10n/app_localizations.dart';
 import '../services/user_service.dart';
 import '../widgets/scoreboard.dart';
+import 'package:flutter/foundation.dart';
+import '../ai/bot_engine.dart';
+
+part 'game_page_bot.dart';
 
 enum GameMode {
   local2P,
   onlineManual,     // 수동 방 생성
   onlineMatching,   // 매칭 기반 게임
+  vsBot,            // 로컬 1P vs 간단 AI
 }
+
+enum BotDifficulty { easy, medium }
+
 enum Player { none, A, B }
 
 class Piece {
@@ -63,6 +73,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
   String? playerAName = 'unknown';
   String? playerBName = 'unknown';
+  int? playerAScore;
+  int? playerBScore;
 
   Future<void> _loadPlayerNames() async {
     final roomDoc = await FirebaseFirestore.instance
@@ -73,22 +85,28 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     String playerB_UID = roomDoc.data()?['playerB'];
     String ANickName = 'unknown';
     String BNickName = 'unknown';
+    int? aScore;
+    int? bScore;
 
     if (playerA_UID != null) {
       final AUserDoc = await FirebaseFirestore.instance.collection('users').doc(playerA_UID).get();
       if (AUserDoc.exists) {
         ANickName = AUserDoc.data()?['nickname'] ?? 'unknown';
+        aScore = AUserDoc.data()?['score'] as int?;
       }
     }
     if (playerB_UID != null) {
       final BUserDoc = await FirebaseFirestore.instance.collection('users').doc(playerB_UID).get();
       if (BUserDoc.exists) {
         BNickName = BUserDoc.data()?['nickname'] ?? 'unknown';
+        bScore = BUserDoc.data()?['score'] as int?;
       }
     }
     setState(() {
       playerAName = ANickName;
       playerBName = BNickName;
+      playerAScore = aScore;
+      playerBScore = bScore;
     });
   }
 
@@ -100,6 +118,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   Map<String, double> highlightedOpacity = {};
   late AnimationController highlightController;
   static const int boardSize = 7;
+  // Delay before bot acts so player has breathing room
 
   List<List<Player>> board =
       List.generate(boardSize, (_) => List.filled(boardSize, Player.none));
@@ -111,6 +130,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   int bPiecesPlaced = 2;
   bool placementPhase = true;
   bool gameStarted = false;
+  bool gameEnded = false;   // ➊ 새 플래그
 
   int? previousScore;
   int? finalScore = null;
@@ -129,24 +149,53 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   Timer? moveTimer;
   int remainingTime = 60;
 
+  /// 봇이 수를 두기 전 지연 시간 (난이도별 설정)
+  Duration botTurnDelay = const Duration(milliseconds: 3000); // 기본값 (초급)
+
   bool isAwaitingWall = false;
+  // --- Bot visual indicator ---
+  int? botPrevRow;
+  int? botPrevCol;
 
   Player? myPlayer;
+  BotDifficulty botDifficulty = BotDifficulty.easy;   // default
+  
+  
+
+  bool get isBotMode => widget.mode == GameMode.vsBot;
 
   void _startTimer() {
-    moveTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    if (gameEnded) return;
+
+    // 중복 실행 방지
+    moveTimer?.cancel();
+
+    moveTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
       setState(() {
         remainingTime--;
+
         if (remainingTime <= 0) {
           moveTimer?.cancel();
+
           if (placementPhase) {
-            _placeRandomInitialPiece();
+            // 말 배치 시간 초과
+            if (isBotMode && currentTurnPlayer != myPlayer) {
+              // 봇 차례 – 임의 배치
+              _botPlaceInitialPiece();
+            } else {
+              _placeRandomInitialPiece();
+            }
           } else {
-            _placeRandomWall();
+            // 이동 + 벽 설치 시간 초과
+            if (isBotMode && currentTurnPlayer != myPlayer) {
+              _botPlaceRandomWall();
+            } else {
+              _placeRandomWall();
+            }
           }
         }
       });
@@ -278,18 +327,19 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         .collection('walls')
         .get();
 
-    print('🧩 moves 개수: ${movesSnapshot.docs.length}');
+    debugPrint('🧩 moves 개수: ${movesSnapshot.docs.length}');
     for (var doc in movesSnapshot.docs) {
-      print('📦 move: ${doc.data()}');
+      debugPrint('📦 move: ${doc.data()}');
     }
 
-    print('🧱 walls 개수: ${wallsSnapshot.docs.length}');
+    debugPrint('🧱 walls 개수: ${wallsSnapshot.docs.length}');
     for (var doc in wallsSnapshot.docs) {
-      print('📦 wall: ${doc.data()}');
+      debugPrint('📦 wall: ${doc.data()}');
     }
   }
 
   late final GameTheme currentTheme;
+  @override
   void initState() {
     super.initState();
     // Load saved theme before any logic
@@ -299,7 +349,27 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       duration: Duration(milliseconds: 800),
     );
     currentTheme = availableThemes[selectedThemeIndex];
-    if (widget.mode != GameMode.local2P) {
+    if (isBotMode) {
+      // ➊ 난이도 → ➋ 말 선택 순서로 진행
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // 난이도 선택
+        final diff = await _showDifficultySelectionDialog(context);
+        if (!mounted) return;
+        setState(() => botDifficulty = diff ?? BotDifficulty.easy);
+        setState(() => botTurnDelay = Duration(milliseconds: botDifficulty == BotDifficulty.easy ? 1000 : 100));
+        
+        // 말 선택
+        final choice = await _showSideSelectionDialog(context, currentTheme);
+        if (!mounted) return;
+        setState(() {
+          myPlayer = choice;
+          gameStarted = true;
+        });
+        _placeInitialPieces();
+      });
+      return; // defer rest of init until after selection
+    }
+    if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot ) {
       _loadPlayerNames();
       _waitForPlayers();
       // Listen for someone leaving immediately
@@ -327,13 +397,12 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
           gameStarted = true;
         });
         _placeInitialPieces();
-        _debugCheckRoomSubcollections(); // 👈 디버깅용
+        // _debugCheckRoomSubcollections(); // 👈 디버깅용
         // Start timer immediately after initial pieces placed and game started
         // remainingTime = 60;
         // _startTimer();
       }
     });
-    _listenToPlayerChanges();
   }
 
   Future<void> _listenToPlayerChanges() async {
@@ -349,17 +418,18 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       final players = List<String>.from(snapshot.data()?['players'] ?? []);
       if (players.length == 1 && players.contains(widget.playerId)) {
         if (finalScore != null) {
-          print('✅ 이미 점수 반영됨 → 퇴장 처리 생략');
+          debugPrint('✅ 이미 점수 반영됨 → 퇴장 처리 생략');
           return;
         }
-        setState(() {
-          gameResultText = '상대가 퇴장하여 승리하였습니다!';
-        });
+        
         moveTimer?.cancel();
-
+        
         if (widget.mode == GameMode.onlineMatching && widget.playerId != null && myPlayer != null) {
           _handleOpponentLeft();  // 🔁 async 작업을 별도 함수로 분리
         }
+        setState(() {
+          gameResultText = AppLocalizations.of(context)!.opponentLeft;
+        });
       }
     });
   }
@@ -374,12 +444,48 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     final doc = await FirebaseFirestore.instance.collection('users').doc(widget.playerId).get();
     final previous = doc.data()?['score'] ?? 1000;
 
-    await UserService.updateScore(widget.playerId!, result: 'win', opponentUid:loserId);
-    print("퇴장 승리 처리! : ${widget.playerId}");
-    if (loserId != null) {
-      await UserService.updateScore(loserId, result: 'lose', opponentUid:widget.playerId);
-      print("퇴장 패배 처리! : $loserId");
+    // 퇴장 승리 처리 시, 내 점수 & 상대 점수를 함께 넘김
+    if (widget.playerId == playerA) {
+      // 내가 A일 때
+      await UserService.updateScore(
+        playerA!,               // 이긴 쪽 UID
+        result: 'win',
+        opponentUid: loserId,
+        ownScore: playerAScore,         // 내 점수
+        oppScore: playerBScore,    // 상대 점수
+      );
+    } else {
+      // 내가 B일 때
+      await UserService.updateScore(
+        playerB!,               // 이긴 쪽 UID
+        result: 'win',
+        opponentUid: loserId,
+        ownScore: playerBScore,         // 내 점수
+        oppScore: playerAScore,    // 상대 점수
+      );
+    }
 
+    // 패배 처리할 때도 마찬가지로 ownScore, oppScore 넘겨줌
+    if (loserId != null) {
+      if (loserId == playerA) {
+        // A가 패배
+        await UserService.updateScore(
+          playerA!,
+          result: 'lose',
+          opponentUid: widget.playerId,
+          ownScore: playerAScore,
+          oppScore: playerBScore,
+        );
+      } else {
+        // B가 패배
+        await UserService.updateScore(
+          playerB!,
+          result: 'lose',
+          opponentUid: widget.playerId,
+          ownScore: playerBScore,
+          oppScore: playerAScore,
+        );
+      }
     }
     
     final updatedDoc = await FirebaseFirestore.instance.collection('users').doc(widget.playerId).get();
@@ -390,7 +496,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       finalScore = updated;
     });
 
-    print("origin : $previousScore -> after : $finalScore");
+    debugPrint("origin : $previousScore -> after : $finalScore");
   }
 
   void _listenToTurnChanges() {
@@ -450,20 +556,34 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   Future<void> _placeInitialPieces() async {
-
     pieces.addAll([
       Piece(Player.A, 1, 1),
       Piece(Player.A, 5, 5),
       Piece(Player.B, 5, 1),
       Piece(Player.B, 1, 5),
     ]);
+    if (isBotMode) {
+      playerAName = myPlayer == Player.A ? 'You' : 'Bot';
+      playerBName = myPlayer == Player.B ? 'You' : 'Bot';
+    }
 
     // Reset placement counters so each player can add 2 more pieces
     aPiecesPlaced = 2;
     bPiecesPlaced = 2;
     currentTurnPlayer = Player.A;
 
-    if (widget.mode != GameMode.local2P && widget.roomId != null) {
+    if (isBotMode) {
+      // 초기 배치 단계도 사용자‑봇이 번갈아 가며 진행
+      placementPhase = true;
+      currentTurnPlayer = Player.A;      // 항상 A부터 배치
+
+      // 만약 사용자가 B를 선택했다면(A가 봇), 봇이 먼저 두어야 함
+      if (myPlayer != Player.A) {
+        Future.delayed(botTurnDelay, _botPlaceInitialPiece);
+      }
+    }
+
+    if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot && widget.roomId != null) {
       FirebaseFirestore.instance
         .collection('rooms')
         .doc(widget.roomId)
@@ -490,7 +610,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         });
     }
 
-    if (widget.mode != GameMode.local2P && widget.roomId != null) {
+    if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot && widget.roomId != null) {
       _listenToOpponentMoves();
       FirebaseFirestore.instance
         .collection('rooms')
@@ -546,8 +666,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         });
       _listenToTurnChanges();
       _listenToPlacementPhaseChanges();
-      _listenToPlayerChanges();
-      
+      // _listenToPlayerChanges();
     }
   }
 
@@ -557,7 +676,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     bool occupied = pieces.any((p) => p.row == row && p.col == col);
     if (occupied) return;
 
-    if (widget.mode != GameMode.local2P && widget.roomId != null && myPlayer != null) {
+    if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot && widget.roomId != null && myPlayer != null) {
       // 현재 턴이 내 턴인지 확인
       if (myPlayer != currentTurnPlayer) return;
 
@@ -603,9 +722,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       }
     }
 
-    if (widget.mode == GameMode.local2P) {
+    if (widget.mode == GameMode.local2P || widget.mode == GameMode.vsBot) {
       if ((currentTurnPlayer == Player.A && aPiecesPlaced >= 4) ||
           (currentTurnPlayer == Player.B && bPiecesPlaced >= 4)) return;
+      // Bot 모드일 때는 내 차례가 아니면 무시
+      if (widget.mode == GameMode.vsBot && currentTurnPlayer != myPlayer) return;
       _playPlayerSound();
       setState(() {
         pieces.add(Piece(currentTurnPlayer, row, col));
@@ -617,6 +738,13 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       
         // 턴 전환
         currentTurnPlayer = currentTurnPlayer == Player.A ? Player.B : Player.A;
+
+        // Bot 차례가 되면 자동 배치
+        if (widget.mode == GameMode.vsBot && currentTurnPlayer != myPlayer) {
+          Future.delayed(botTurnDelay, () {
+            if (!gameEnded) _botPlaceInitialPiece();
+          });
+        }
         
         // 모든 말이 배치되면 배치 단계 종료
         if (aPiecesPlaced == 4 && bPiecesPlaced == 4) {
@@ -624,6 +752,12 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
           currentTurnPlayer = Player.B;
           remainingTime = 60;
           _startTimer();
+          // Bot이 B이고 이제 곧바로 이동을 시작해야 하면
+          if (widget.mode == GameMode.vsBot && myPlayer != Player.B) {
+            Future.delayed(botTurnDelay, () {
+              if (!gameEnded) _botMakeMove();
+            });
+          }
         }
         
       });
@@ -729,7 +863,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
   void _handleMovePhaseTap(int row, int col) {
     // 🔒 내 차례인지 확인 (온라인 모드만)
-    if (widget.mode != GameMode.local2P && currentTurnPlayer != myPlayer) return;
+    if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot && currentTurnPlayer != myPlayer) return;
 
     if (isAwaitingWall) return;
     if (placementPhase) return;
@@ -738,8 +872,39 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
     if (selected) {
       final movable = getMovablePositions(selectedRow!, selectedCol!);
-      // If tapped the same piece again and no moves exist, switch to wall placement mode
+      // If tapped the same piece again and no moves exist, attempt wall placement or skip if also blocked
       if (row == selectedRow && col == selectedCol && movable.isEmpty) {
+        // Check if any wall placement is possible around (row, col)
+        final directions = ['top', 'bottom', 'left', 'right'];
+        final deltaMap = {
+          'top': [-1, 0, 'bottom'],
+          'bottom': [1, 0, 'top'],
+          'left': [0, -1, 'right'],
+          'right': [0, 1, 'left'],
+        };
+        bool anySpace = false;
+        debugPrint("벽 체크 드가자~~~~~");
+
+        for (var dir in directions) {
+          final d = deltaMap[dir]!;
+          int nr = row + (d[0] as int);
+          int nc = col + (d[1] as int);
+          final key = wallKey(row, col, dir);
+          final neighborKey = wallKey(nr, nc, d[2] as String);
+          bool inBounds = nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize;
+          if (!walls.containsKey(key) && (!inBounds || !walls.containsKey(neighborKey))) {
+            anySpace = true;
+            break;
+          }
+        }
+        debugPrint("벽 체크 끝났다~~~~~  : $anySpace");
+
+        if (!anySpace) {
+          // No wall space either: skip wall phase and end turn
+          _handleNoWallSpace();
+          return;
+        }
+        // Otherwise, enter wall placement mode
         setState(() {
           lastMovedRow = row;
           lastMovedCol = col;
@@ -750,7 +915,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       final isValidMove = movable.any((pos) => pos[0] == row && pos[1] == col);
 
       if (isValidMove) {
-        if (widget.mode != GameMode.local2P && widget.roomId != null) {
+        if (widget.mode != GameMode.local2P && widget.mode != GameMode.vsBot && widget.roomId != null) {
           final piece = pieces.firstWhere(
             (p) => p.row == selectedRow && p.col == selectedCol && p.owner == currentTurnPlayer,
           );
@@ -786,7 +951,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         return;
       }
     }
-
+  
     // 🔄 말 선택
     bool canSelect = widget.mode != GameMode.local2P
         ? currentTurnPlayer == myPlayer
@@ -798,6 +963,78 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         selectedCol = col;
       });
     }
+  }
+  // 벽 설치 공간이 없을 때 처리용 헬퍼 메서드
+  void _handleNoWallSpace() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1A17),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: Text(
+          AppLocalizations.of(context)!.confirmExitTitle,
+          style: TextStyle(
+            fontFamily: 'ChungjuKimSaeng',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFD4AF37),
+          ),
+        ),
+        content: Text(
+         AppLocalizations.of(context)!.separatedArea,
+          style: TextStyle(
+            fontFamily: 'ChungjuKimSaeng',
+            fontSize: 16,
+            color: Colors.white70,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              // 다음 턴 처리 로직 (기존 코드 유지)
+              final nextPlayer = currentTurnPlayer == Player.A ? Player.B : Player.A;
+              if ((widget.mode == GameMode.onlineManual || widget.mode == GameMode.onlineMatching)
+                  && widget.roomId != null) {
+                await FirebaseFirestore.instance
+                    .collection('rooms')
+                    .doc(widget.roomId)
+                    .update({
+                      'turn': nextPlayer.name,
+                      'lastWallPlacedBy': currentTurnPlayer.name,
+                    });
+              }
+              setState(() {
+                isAwaitingWall = false;
+                lastMovedRow = null;
+                lastMovedCol = null;
+                selectedRow = null;
+                selectedCol = null;
+                currentTurnPlayer = nextPlayer;
+                if (isBotMode && currentTurnPlayer != myPlayer && !gameEnded) {
+                  Future.delayed(botTurnDelay, () {
+                    if (!gameEnded) _botMakeMove();
+                  });
+                }
+                moveTimer?.cancel();
+                remainingTime = 60;
+                _startTimer();
+              });
+            },
+            child: Text(
+              AppLocalizations.of(context)!.confirm,
+              style: TextStyle(
+                fontFamily: 'ChungjuKimSaeng',
+                color: Color(0xFFD4AF37),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Place wall in a direction from the last moved piece
@@ -872,6 +1109,12 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         lastMovedCol = null;
         isAwaitingWall = false;
         currentTurnPlayer = currentTurnPlayer == Player.A ? Player.B : Player.A;
+        // vsBot 모드에서 내 턴이 끝났으면 즉시 봇이 움직인다
+        if (isBotMode && currentTurnPlayer != myPlayer && !gameEnded) {
+          Future.delayed(botTurnDelay, () {
+            if (!gameEnded) _botMakeMove();
+          });
+        }
         moveTimer?.cancel();
         remainingTime = 60;
         _startTimer();
@@ -1036,7 +1279,9 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     int aCount = 0;
     int bCount = 0;
     if (regions.length > 1 && !hasMixedRegion) {
-
+      // ---- Mark game as ended immediately to stop any further bot scheduling ----
+      gameEnded = true;
+      moveTimer?.cancel();
       // Animated highlight logic before result
       highlightedAreas.clear();
       highlightedOpacity.clear();
@@ -1078,27 +1323,31 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
       if (widget.mode == GameMode.local2P) {
         setState(() {
-          gameResultText = '영역이 분리되었습니다.\n($aCount vs $bCount)';
+          // "영역이 분리되었습니다." 부분은 ARB의 separatedArea 키에서 가져옵니다
+          gameResultText =
+            '${AppLocalizations.of(context)!.separatedArea}\n($aCount vs $bCount)';
           updatedAcount = aCount;
           updatedBcount = bCount;
         });
       } else {
-        print("A Count : $aCount");
-        print("B Count : $bCount");
+        debugPrint("A Count : $aCount");
+        debugPrint("B Count : $bCount");
+        // 승리/무승부 텍스트도 ARB 키를 추가해서 가져옵니다
         final winnerText = aCount > bCount
-            ? '$playerAName 승리! ($aCount vs $bCount)'
+            ? '$playerAName ${AppLocalizations.of(context)!.victory} ($aCount vs $bCount)'
             : bCount > aCount
-                ? '$playerBName 승리! ($bCount vs $aCount)'
-                : '무승부! ($aCount vs $bCount)';
+                ? '$playerBName ${AppLocalizations.of(context)!.victory} ($bCount vs $aCount)'
+                : '${AppLocalizations.of(context)!.draw} ($aCount vs $bCount)';
         setState(() {
-          gameResultText = '영역이 분리되었습니다.\n$winnerText';
+          gameResultText =
+            '${AppLocalizations.of(context)!.separatedArea}\n$winnerText';
           updatedAcount = aCount;
           updatedBcount = bCount;
         });
       }
       moveTimer?.cancel();
       // ✅ 점수 갱신 (온라인 모드인 경우만)
-      if (widget.mode == GameMode.onlineMatching && widget.playerId != null) {
+      if (widget.mode == GameMode.onlineMatching && widget.playerId != null && finalScore == null) {
         final roomDoc = await FirebaseFirestore.instance.collection('rooms').doc(widget.roomId).get();
         final playerA = roomDoc.data()?['playerA'];
         final playerB = roomDoc.data()?['playerB'];
@@ -1107,12 +1356,38 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
         final doc = await FirebaseFirestore.instance.collection('users').doc(widget.playerId).get();
 
+        // 예: A가 이긴 경우
         if (aCount > bCount) {
-          await UserService.updateScore(widget.playerId!, result: widget.playerId == playerA ? 'win' : 'lose', opponentUid:opponentUid);
-        } else if (bCount > aCount) {
-          await UserService.updateScore(widget.playerId!, result: widget.playerId == playerA ? 'win' : 'lose', opponentUid:opponentUid);
-        } else {
-          await UserService.updateScore(widget.playerId!, result: 'draw', opponentUid:opponentUid);
+          // 현재 내가 A인지 확인
+          final amIWinner = (widget.playerId == playerA);
+          await UserService.updateScore(
+            widget.playerId!,
+            result: amIWinner ? 'win' : 'lose',
+            opponentUid: opponentUid,
+            ownScore: amIWinner ? playerAScore : playerBScore,
+            oppScore: amIWinner ? playerBScore : playerAScore,
+          );
+        }
+        // 예: B가 이긴 경우
+        else if (bCount > aCount) {
+          final amIWinner = (widget.playerId == playerB);
+          await UserService.updateScore(
+            widget.playerId!,
+            result: amIWinner ? 'win' : 'lose',
+            opponentUid: opponentUid,
+            ownScore: amIWinner ? playerBScore : playerAScore,
+            oppScore: amIWinner ? playerAScore : playerBScore,
+          );
+        }
+        // 예: 무승부인 경우
+        else {
+          await UserService.updateScore(
+            widget.playerId!,
+            result: 'draw',
+            opponentUid: opponentUid,
+            ownScore: (widget.playerId == playerA ? playerAScore : playerBScore),
+            oppScore: (widget.playerId == playerA ? playerBScore : playerAScore),
+          );
         }
         final updatedDoc = await FirebaseFirestore.instance.collection('users').doc(widget.playerId).get();
         setState(() {
@@ -1241,8 +1516,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        title: const Text(
-          '확인',
+        title: Text(
+          AppLocalizations.of(context)!.confirm,
           style: TextStyle(
             fontFamily: 'ChungjuKimSaeng',
             fontSize: 20,
@@ -1250,8 +1525,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
             color: Color(0xFFD4AF37),
           ),
         ),
-        content: Text(
-          mode != GameMode.local2P ? '탈주로 간주되어 패배처리됩니다.\n나가시겠습니까?' : "나가시겠습니까?",
+
+          content: Text(
+         mode != GameMode.local2P
+             ? AppLocalizations.of(context)!.confirmExitContentOnline
+             : AppLocalizations.of(context)!.confirmExitContentLocal,
           style: TextStyle(
             fontFamily: 'ChungjuKimSaeng',
             fontSize: 16,
@@ -1261,8 +1539,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              '아니요',
+            child: Text(
+              AppLocalizations.of(context)!.no,
               style: TextStyle(
                 fontFamily: 'ChungjuKimSaeng',
                 color: Colors.white,
@@ -1271,8 +1549,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              '예',
+            child:  Text(
+              AppLocalizations.of(context)!.yes,
               style: TextStyle(
                 fontFamily: 'ChungjuKimSaeng',
                 color: Color(0xFFD4AF37),
@@ -1310,7 +1588,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       // players가 비어 있으면 서브 컬렉션과 문서 전체 삭제
       if (players.isEmpty) {
         final batch = FirebaseFirestore.instance.batch();
-        print("players가 비어있습니다. 삭제를 진행합니다.");
+        debugPrint("players가 비어있습니다. 삭제를 진행합니다.");
         // 서브 컬렉션 문서 삭제
         for (final collection in ['placements', 'moves', 'walls']) {
           final subColRef = roomRef.collection(collection);
@@ -1319,11 +1597,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
             batch.delete(doc.reference);
           }
         }
-        print("서브컬렉션 삭제 완료");
+        debugPrint("서브컬렉션 삭제 완료");
         // room 문서 삭제
         batch.delete(roomRef);
         await batch.commit();
-        print("방 문서 삭제 완료");
+        debugPrint("방 문서 삭제 완료");
 
       }
     }
@@ -1338,7 +1616,22 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: widget.mode != GameMode.local2P ? Image.asset('lib/img/text/text_online_black.png', width: 100) : Image.asset('lib/img/text/text_2p_black.png', width: 100),
+          title: () {
+            final isEn = Localizations.localeOf(context).languageCode == 'en';
+            if (widget.mode == GameMode.local2P) {
+              return isEn
+                  ? const Text('2P', style: TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black))
+                  : Image.asset('lib/img/text/text_2p_black.png', width: 100);
+            } else if (widget.mode == GameMode.vsBot) {
+              return isEn
+                  ? const Text('AI', style: TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black))
+                  : Image.asset('lib/img/text/text_ai_black.png', width: 100);
+            } else {
+              return isEn
+                  ? const Text('Online Match', style: TextStyle(fontFamily: 'ChungjuKimSaeng',fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black))
+                  : Image.asset('lib/img/text/text_online_black.png', width: 100);
+            }
+          }(),
         ),
         body: Column(
           children: [
@@ -1371,30 +1664,46 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Left side: Player A nickname and image, safely truncated
+                              // Left side: Player A nickname and image, safely truncated, with score
                               Flexible(
                                 flex: 1,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Image.asset(
-                                      currentTheme.playerAImagePath,
-                                      width: 24, height: 24,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        playerAName!,
-                                        style: TextStyle(
-                                          fontFamily: 'ChungjuKimSaeng',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color.fromARGB(255, 13, 11, 4),
-                                          shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          currentTheme.playerAImagePath,
+                                          width: 24, height: 24,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            playerAName!,
+                                            style: TextStyle(
+                                              fontFamily: 'ChungjuKimSaeng',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(255, 13, 11, 4),
+                                              shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                    if (playerAScore != null)
+                                      Text(
+                                        '▶︎ $playerAScore',
+                                        style: TextStyle(
+                                              fontFamily: 'ChungjuKimSaeng',
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(255, 13, 11, 4),
+                                              shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                            ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -1412,32 +1721,48 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              // Right side: Player B nickname and image, safely truncated and right aligned
+                              // Right side: Player B nickname and image, safely truncated and right aligned, with score
                               Flexible(
                                 flex: 1,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.end,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        playerBName!,
-                                        style: TextStyle(
-                                          fontFamily: 'ChungjuKimSaeng',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color.fromARGB(255, 13, 11, 4),
-                                          shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            playerBName!,
+                                            style: TextStyle(
+                                              fontFamily: 'ChungjuKimSaeng',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(255, 13, 11, 4),
+                                              shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.right,
+                                          ),
                                         ),
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.right,
+                                        const SizedBox(width: 6),
+                                        Image.asset(
+                                          currentTheme.playerBImagePath,
+                                          width: 24, height: 24,
+                                        ),
+                                      ],
+                                    ),
+                                    if (playerBScore != null)
+                                      Text(
+                                        '$playerBScore ◀︎',
+                                        style: TextStyle(
+                                              fontFamily: 'ChungjuKimSaeng',
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(255, 13, 11, 4),
+                                              shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                            ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Image.asset(
-                                      currentTheme.playerBImagePath,
-                                      width: 24, height: 24,
-                                    ),
                                   ],
                                 ),
                               ),
@@ -1450,10 +1775,10 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                           child: Scoreboard(
                             seconds: remainingTime,
                             instruction: placementPhase
-                                ? '말을 배치하세요'
+                                ? AppLocalizations.of(context)!.placementInstruction
                                 : isAwaitingWall
-                                    ? '벽을 세우세요'
-                                    : '말을 이동하세요',
+                                    ? AppLocalizations.of(context)!.wallInstruction
+                                    : AppLocalizations.of(context)!.moveInstruction,
                             mode: widget.mode,
                             currentTurn: currentTurnPlayer,
                             myPlayer: myPlayer,
@@ -1572,6 +1897,21 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                           },
                                           child: Container(
                                             margin: EdgeInsets.all(cellSize * 0.2),
+                                            decoration: isBotMode &&
+                                                    piece.row == botPrevRow &&
+                                                    piece.col == botPrevCol &&
+                                                    ((myPlayer == Player.A && piece.owner == Player.B) ||
+                                                        (myPlayer == Player.B && piece.owner == Player.A))
+                                                ? BoxDecoration(
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.yellowAccent.withOpacity(0.8),
+                                                        blurRadius: 12,
+                                                        spreadRadius: 4,
+                                                      ),
+                                                    ],
+                                                  )
+                                                : null,
                                             child: Image.asset(
                                               piece.owner == Player.A
                                                   ? currentTheme.playerAImagePath
@@ -1655,7 +1995,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                             builder: (context) {
                                               // --- Overlay for result: local2P and online modes ---
                                               // If exit-victory text, show it directly
-                                              if (gameResultText == '상대가 퇴장하여 승리하였습니다!') {
+                                              if (gameResultText == AppLocalizations.of(context)!.opponentLeft) {
                                                 return Center(
                                                   child: Column(
                                                     mainAxisSize: MainAxisSize.min,
@@ -1677,14 +2017,14 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                             begin: previousScore!.toDouble(),
                                                             end: finalScore!.toDouble(),
                                                           ),
-                                                          duration: const Duration(milliseconds: 1500),
+                                                          duration: const Duration(milliseconds: 1200),
                                                           builder: (context, value, child) {
                                                             final delta = finalScore! - previousScore!;
                                                             final deltaText = delta >= 0 ? '+$delta' : '$delta';
                                                             return Column(
                                                               children: [
                                                                 Text(
-                                                                  '점수: ${value.toInt()}',
+                                                                  AppLocalizations.of(context)!.scoreLabel(value.toInt()),
                                                                   style: const TextStyle(
                                                                     fontSize: 20,
                                                                     color: Colors.yellowAccent,
@@ -1713,7 +2053,10 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                             Navigator.pop(context);
                                                           }
                                                         },
-                                                        child: const Text('게임 종료'),
+                                                        child : Text(
+                                                          AppLocalizations.of(context)!.gameOverButton,
+                                                          style: const TextStyle(fontFamily: 'ChungjuKimSaeng'),
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -1736,7 +2079,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                         ),
                                                         const SizedBox(width: 8),
                                                         Text(
-                                                          updatedAcount == updatedBcount ? "무승부" : '승리!',
+                                                          updatedAcount == updatedBcount ? AppLocalizations.of(context)!.draw : AppLocalizations.of(context)!.victory,
                                                           style: TextStyle(
                                                             fontSize: 24,
                                                             fontWeight: FontWeight.bold,
@@ -1785,16 +2128,16 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                           Navigator.pop(context);
                                                         }
                                                       },
-                                                      child: Text('게임 종료'),
+                                                      child : Text(
+                                                          AppLocalizations.of(context)!.gameOverButton,
+                                                          style: const TextStyle(fontFamily: 'ChungjuKimSaeng'),
+                                                        ),
                                                     ),
                                                   ],
                                                 );
                                               }
                                               // --- Online mode: custom result overlay ---
                                               if (widget.mode != GameMode.local2P) {
-                                                
-                                                print("UI상 A Count : $updatedAcount");
-                                                print("UI상 B Count : $updatedBcount");
                                               
                                                 final winner = updatedAcount > updatedBcount ? Player.A : Player.B;
                                                 final winnerName = updatedAcount > updatedBcount ? playerAName : playerBName;
@@ -1810,7 +2153,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                         Image.asset(winnerImage, width: 36, height: 36),
                                                         const SizedBox(width: 8),
                                                         Text(
-                                                          '$winnerName 승리!',
+                                                          '$winnerName ${AppLocalizations.of(context)!.victory}',
                                                           style: TextStyle(
                                                             fontSize: 24,
                                                             fontWeight: FontWeight.bold,
@@ -1849,7 +2192,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                             children: [
                                                               Text(
-                                                                '점수: ${value.toInt()}',
+                                                                AppLocalizations.of(context)!.scoreLabel(value.toInt()),
                                                                 style: TextStyle(
                                                                   fontSize: 20,
                                                                   color: Colors.yellowAccent,
@@ -1876,7 +2219,10 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                           Navigator.pop(context);
                                                         }
                                                       },
-                                                      child: Text('게임 종료'),
+                                                      child : Text(
+                                                          AppLocalizations.of(context)!.gameOverButton,
+                                                          style: const TextStyle(fontFamily: 'ChungjuKimSaeng'),
+                                                        ),
                                                     ),
                                                   ],
                                                 );
@@ -1902,7 +2248,10 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                                                         Navigator.pop(context);
                                                       }
                                                     },
-                                                    child: Text('게임 종료'),
+                                                    child : Text(
+                                                          AppLocalizations.of(context)!.gameOverButton,
+                                                          style: const TextStyle(fontFamily: 'ChungjuKimSaeng'),
+                                                        ),
                                                   ),
                                                 ],
                                               );

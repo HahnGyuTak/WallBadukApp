@@ -1,4 +1,5 @@
 // lib/services/room_service.dart
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
@@ -57,7 +58,7 @@ class RoomService {
     // 디버깅용 로그 출력
     final updated = await ref.get();
     final updatedPlayers = updated.data()?['players'];
-    print('✅ joinRoomAsPlayer: $playerId added to $roomId -> $updatedPlayers');
+    debugPrint('✅ joinRoomAsPlayer: $playerId added to $roomId -> $updatedPlayers');
   }
 
   /// 온라인 매칭: 대기열이 있으면 방 생성 후 둘 다 입장
@@ -99,7 +100,7 @@ class RoomService {
     final players = List<String>.from(doc.data()?['players'] ?? []);
     if (players.isEmpty) {
       await ref.delete();
-      print('빈 방 삭제됨: $roomId');
+      debugPrint('빈 방 삭제됨: $roomId');
     }
   }
 
@@ -108,7 +109,7 @@ class RoomService {
 
     final docSnapshot = await docRef.get();
     if (!docSnapshot.exists) {
-      print('❌ 존재하지 않는 방 코드: $roomCode');
+      debugPrint('❌ 존재하지 않는 방 코드: $roomCode');
       return null;
     }
 
@@ -127,9 +128,9 @@ class RoomService {
           'playerB': playerB,
         });
 
-        print('👥 이전 플레이어 목록: $existingPlayers');
-        print('➕ 추가된 플레이어: $playerId');
-        print('📤 최종 players: $updatedPlayers');
+        debugPrint('👥 이전 플레이어 목록: $existingPlayers');
+        debugPrint('➕ 추가된 플레이어: $playerId');
+        debugPrint('📤 최종 players: $updatedPlayers');
       }
     });
 

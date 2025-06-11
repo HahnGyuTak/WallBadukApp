@@ -1,8 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import '../l10n/app_localizations.dart';
+
 
 class LeaderboardPage extends StatefulWidget {
   @override
@@ -12,6 +16,10 @@ class LeaderboardPage extends StatefulWidget {
 class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? uid;
+
+  final ScrollController _relativeScrollController = ScrollController();
+  final GlobalKey _myTileKey = GlobalKey();
+  bool _hasScrolledToMe = false;
 
   @override
   void initState() {
@@ -49,7 +57,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                 leading: Text('#${index + 1}', style: const TextStyle(color: Colors.white)),
                 title: DefaultTextStyle.merge(
                   style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white),
-                  child: Text('닉네임: $nickname'),
+                  child: Text(AppLocalizations.of(context)!.nicknameLabel(nickname)),
                 ),
                 subtitle: DefaultTextStyle.merge(
                   style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white),
@@ -58,15 +66,18 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                     children: [
                       Text('Wins: ${data['wins']}  Losses: ${data['losses']}  Draws: ${data['draws'] ?? 0}'),
                       Text(
-                        '승률: ${((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)
-                          ? ((data['wins'] / (data['wins'] + data['losses'] + (data['draws'] ?? 0))) * 100).toStringAsFixed(1)
-                          : '0.0'}%',
+                        AppLocalizations.of(context)!.winRateLabel(
+                          ((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)
+                            ? ((data['wins'] / (data['wins'] + data['losses'] + (data['draws'] ?? 0))) * 100).toStringAsFixed(1)
+                            : '0.0'
+                        ),
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                     ],
                   ),
                 ),
-                trailing: Text('${data['score']}점',
+                trailing: Text(
+                  AppLocalizations.of(context)!.scoreLabel(data['score']),
                   style: const TextStyle(
                     fontFamily: 'ChungjuKimSaeng',
                     color: Colors.white,
@@ -94,13 +105,28 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
 
         final users = snapshot.data!.docs;
         final index = users.indexWhere((doc) => doc.id == uid);
-        if (index == -1) return const Center(child: Text('자신의 순위를 찾을 수 없습니다.'));
+        if (index == -1) return Center(child: Text(AppLocalizations.of(context)!.noData));
 
-        final start = (index - 50).clamp(0, users.length - 1);
-        final end = (index + 50).clamp(0, users.length);
+        final start = (index - 20).clamp(0, users.length - 1);
+        final end = (index + 20).clamp(0, users.length);
         final range = users.sublist(start, end);
 
+        // Scroll to my tile once
+        if (!_hasScrolledToMe) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_myTileKey.currentContext != null) {
+              Scrollable.ensureVisible(
+                _myTileKey.currentContext!,
+                duration: Duration(milliseconds: 300),
+                alignment: 0.5,
+              );
+            }
+          });
+          _hasScrolledToMe = true;
+        }
+
         return ListView.builder(
+          controller: _relativeScrollController,
           itemCount: range.length,
           itemBuilder: (context, i) {
             final user = range[i];
@@ -112,11 +138,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
             return Container(
               color: isMe ? const Color(0xFF3A2C1A) : null, // dark brown highlight
               child: ListTile(
+                key: isMe ? _myTileKey : null,
                 tileColor: Colors.transparent,
                 leading: Text('#${start + i + 1}', style: const TextStyle(color: Colors.white)),
                 title: DefaultTextStyle.merge(
                   style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white),
-                  child: Text('닉네임: $nickname'),
+                  child: Text(AppLocalizations.of(context)!.nicknameLabel(nickname)),
                 ),
                 subtitle: DefaultTextStyle.merge(
                   style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white),
@@ -125,15 +152,18 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                     children: [
                       Text('Wins: ${data['wins']}  Losses: ${data['losses']}  Draws: ${data['draws'] ?? 0}'),
                       Text(
-                        '승률: ${((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)
-                          ? ((data['wins'] / (data['wins'] + data['losses'] + (data['draws'] ?? 0))) * 100).toStringAsFixed(1)
-                          : '0.0'}%',
+                        AppLocalizations.of(context)!.winRateLabel(
+                          ((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)
+                            ? ((data['wins'] / (data['wins'] + data['losses'] + (data['draws'] ?? 0))) * 100).toStringAsFixed(1)
+                            : '0.0'
+                        ),
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                     ],
                   ),
                 ),
-                trailing: Text('${data['score']}점',
+                trailing: Text(
+                  AppLocalizations.of(context)!.scoreLabel(data['score']),
                   style: const TextStyle(
                     fontFamily: 'ChungjuKimSaeng',
                     color: Colors.white,
@@ -157,7 +187,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
         ));
 
         final data = snapshot.data!.data() as Map<String, dynamic>?;
-        if (data == null) return const Center(child: Text('데이터 없음'));
+        if (data == null) return Center(child: Text(AppLocalizations.of(context)!.noData));
 
         final wins = data['wins'] ?? 0;
         final losses = data['losses'] ?? 0;
@@ -179,14 +209,35 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                   children: [
                     Text(nickname, style: const TextStyle(fontFamily: 'ChungjuKimSaeng', fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                     const SizedBox(height: 8),
-                    Text('점수: ${data['score']}점', style: const TextStyle(fontFamily: 'ChungjuKimSaeng', fontSize: 18, color: Colors.white)),
-                    Text('승률: $winRate%  🏆 $wins  ❌ $losses  🤝 $draws', style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white)),
+                    Text(
+                      AppLocalizations.of(context)!.scoreLabel(data['score']),
+                      style: const TextStyle(
+                        fontFamily: 'ChungjuKimSaeng',
+                        fontSize: 18,
+                        color: Colors.white
+                      ),
+                    ),
+                    Text(
+                      '${AppLocalizations.of(context)!.winRateLabel(winRate)}  🏆 $wins  ❌ $losses  🤝 $draws',
+                      style: const TextStyle(
+                        fontFamily: 'ChungjuKimSaeng',
+                        color: Colors.white
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            const Text('최근 10경기', style: TextStyle(fontFamily: 'ChungjuKimSaeng', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(
+              AppLocalizations.of(context)!.matchesHeading,
+              style: const TextStyle(
+                fontFamily: 'ChungjuKimSaeng',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white
+              ),
+            ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -203,7 +254,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
 
                   final matches = snapshot.data!.docs;
                   if (matches.isEmpty) {
-                    return const Center(child: Text('최근 경기가 없습니다.', style: TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white70)));
+                    return Center(child: Text(
+                      AppLocalizations.of(context)!.noRecentMatches,
+                      style: const TextStyle(fontFamily: 'ChungjuKimSaeng', color: Colors.white70),
+                    ));
                   }
 
                   return ListView.builder(
@@ -212,6 +266,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                       final match = matches[index].data() as Map<String, dynamic>;
                       final opponent = match['opponent'];
                       final result = match['result'];
+                      final deltaScore = match['deltaScore'] as int? ?? 0;
                       final timestamp = match['timestamp'] as Timestamp?;
                       final dateStr = timestamp != null
                           ? DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch).toLocal().toString().split(' ')[0]
@@ -226,7 +281,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                             text: TextSpan(
                               style: const TextStyle(fontFamily: 'ChungjuKimSaeng', fontSize: 16, color: Colors.white),
                               children: [
-                                const TextSpan(text: 'vs '),
+                                const TextSpan(text: 'vs   ', style: TextStyle(fontSize: 10)),
                                 TextSpan(
                                   text: '$opponent  ',
                                   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -240,6 +295,14 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                                         : result == 'lose'
                                             ? Colors.red
                                             : Colors.green,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' (${deltaScore >= 0 ? '+' : ''}$deltaScore)',
+                                  style: TextStyle(
+                                    fontFamily: 'ChungjuKimSaeng',
+                                    fontSize: 14,
+                                    color: result == 'win' ? Colors.blue : result == 'lose' ? Colors.red : Colors.green,
                                   ),
                                 ),
                               ],
@@ -266,9 +329,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1A17),
         iconTheme: const IconThemeData(color: Color(0xFFD4AF37)),
-        title: const Text(
-          '🏆 리더보드',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.leaderboardTitle,
+          style: const TextStyle(
             fontFamily: 'ChungjuKimSaeng',
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -286,10 +349,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
             fontFamily: 'ChungjuKimSaeng',
             fontWeight: FontWeight.bold,
           ),
-          tabs: const [
-            Tab(text: '상위 랭커'),
-            Tab(text: '내 랭킹 보기'),
-            Tab(text: '내 기록'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.topRankersTab),
+            Tab(text: AppLocalizations.of(context)!.viewMyRankingTab),
+            Tab(text: AppLocalizations.of(context)!.myRecordsTab),
           ],
         ),
       ),

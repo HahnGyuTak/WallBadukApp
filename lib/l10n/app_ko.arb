@@ -1,0 +1,408 @@
+{
+  "@@locale": "ko",
+  "appTitle": "벽바둑",
+  "@appTitle": {
+    "description": "앱 이름"
+  },
+  "enterNickname": "닉네임을 입력하세요",
+  "@enterNickname": {
+    "description": "닉네임 입력을 요청하는 다이얼로그 제목"
+  },
+  "nicknameHint": "예: imTak",
+  "@nicknameHint": {
+    "description": "닉네임 입력란의 힌트 텍스트"
+  },
+  "confirm": "확인",
+  "@confirm": {
+    "description": "다이얼로그 확인 버튼 텍스트"
+  },
+  "difficultySelectionTitle": "난이도 선택",
+  "@difficultySelectionTitle": {
+    "description": "Bot 모드에서 난이도 선택 다이얼로그 제목"
+  },
+  "difficultySelectionContent": "AI 난이도를 선택하세요.",
+  "@difficultySelectionContent": {
+    "description": "Bot 모드에서 난이도 선택 다이얼로그 내용"
+  },
+  "difficultyEasy": "초급",
+  "@difficultyEasy": {
+    "description": "Bot 모드에서 초급 난이도 버튼 텍스트"
+  },
+  "difficultyMedium": "중급",
+  "@difficultyMedium": {
+    "description": "Bot 모드에서 중급 난이도 버튼 텍스트"
+  },
+  "sideSelectionTitle": "말 선택",
+  "@sideSelectionTitle": {
+    "description": "Bot 모드에서 말 선택 다이얼로그 제목"
+  },
+  "sideSelectionContent": "어느 말을 사용하시겠습니까?",
+  "@sideSelectionContent": {
+    "description": "Bot 모드에서 말 선택 다이얼로그 내용"
+  },
+  "sideSelectionOptionA": "선배치",
+  "@sideSelectionOptionA": {
+    "description": "말 선택 다이얼로그에서 A 옵션 텍스트"
+  },
+  "sideSelectionOptionB": "선공",
+  "@sideSelectionOptionB": {
+    "description": "말 선택 다이얼로그에서 B 옵션 텍스트"
+  },
+  "placementInstruction": "말을 배치하세요",
+  "@placementInstruction": {
+    "description": "배치 단계에서 상단에 표시할 안내 텍스트"
+  },
+  "moveInstruction": "말을 이동하세요",
+  "@moveInstruction": {
+    "description": "이동 단계에서 상단에 표시할 안내 텍스트"
+  },
+  "wallInstruction": "벽을 세우세요",
+  "@wallInstruction": {
+    "description": "벽 설치 단계에서 상단에 표시할 안내 텍스트"
+  },
+  "confirmExitTitle": "알림",
+  "@confirmExitTitle": {
+    "description": "벽 설치 공간이 없을 때"
+  },
+  "separatedArea": "벽 설치 공간이 남아있지 않으므로 턴을 종료합니다.",
+  "@separatedArea": {
+    "description": "벽 설치 공간이 없을 때"
+  },
+  "confirmExitContentOnline": "탈주로 간주되어 패배처리됩니다.\n나가시겠습니까?",
+  "@confirmExitContentOnline": {
+    "description": "게임 중 뒤로가기 버튼 눌렀을 때 안내텍스트"
+  },
+  "confirmExitContentLocal": "나가시겠습니까?",
+  "@confirmExitContentLocal": {
+    "description": "게임 중 뒤로가기 버튼 눌렀을 때 안내텍스트"
+  },
+  "no": "아니요",
+  "@no": {
+    "description": "Yes or No"
+  },
+  "yes": "예",
+  "@yes": {
+    "description": "Yes or No"
+  },
+  "opponentLeft": "상대가 퇴장하여 승리하였습니다!",
+  "@opponentLeft": {
+    "description": "상대 퇴장 승리 안내 문구"
+  },
+  "gameOverButton": "게임 종료",
+  "@gameOverButton": {
+    "description": "결과 화면 종료 버튼"
+  },
+  "scoreLabel": "점수: {score}",
+  "@scoreLabel": {
+    "description": "게임 결과에서 점수를 보여주는 라벨",
+    "placeholders": {
+      "score": {}
+    }
+  },
+  "victory": "승리!",
+    "@victory": {
+    "description": "승리 표시 텍스트"
+  },
+    "draw": "무승부!",
+    "@draw": {
+    "description": "무승부 표시 텍스트"
+  },
+  "leaderboardTitle": "🏆 리더보드",
+  "@leaderboardTitle": {
+    "description": "리더보드 화면 제목"
+  },
+  "topRankersTab": "상위 랭커",
+  "@topRankersTab": {
+    "description": "리더보드 탭바 상단 탭 텍스트"
+  },
+  "viewMyRankingTab": "내 랭킹 보기",
+  "@viewMyRankingTab": {
+    "description": "리더보드 탭바 내 랭킹 보기 탭 텍스트"
+  },
+  "myRecordsTab": "내 기록",
+  "@myRecordsTab": {
+    "description": "리더보드 탭바 내 기록 탭 텍스트"
+  },
+  "noData": "데이터 없음",
+  "@noData": {
+    "description": "데이터 없을 때 표시할 텍스트"
+  },
+  "noRecentMatches": "최근 경기가 없습니다.",
+  "@noRecentMatches": {
+    "description": "최근 경기 없을 때 표시할 텍스트"
+  },
+  "nicknameLabel": "닉네임: {nickname}",
+  "@nicknameLabel": {
+    "description": "사용자 이름 앞에 붙는 '닉네임:' 레이블",
+    "placeholders": {
+      "nickname": {}
+    }
+  },
+  "winRateLabel": "승률: {winRate}%",
+  "@winRateLabel": {
+    "description": "승률 레이블",
+    "placeholders": {
+      "winRate": {}
+    }
+  },
+  "matchesHeading": "최근 10경기",
+  "@matchesHeading": {
+    "description": "최근 경기 목록 상단 제목"
+  },
+  "loadError": "정보를 불러오지 못했습니다.",
+  "@loadError": {
+    "description": "오류 창 안내 문구"
+  },
+  "legalInfoTitle": "법적 고지",
+  "@legalInfoTitle": {
+    "description": "법적 고지 탭 제목"
+  },
+  "developerInfoTab": "개발자 정보",
+  "@developerInfoTab": {
+    "description": "오류 창 안내 문구"
+  },
+  "termsOfServiceTab": "이용약관",
+  "@termsOfServiceTab": {
+    "description": "오류 창 안내 문구"
+  },
+  "privacyPolicyTab": "개인정보처리방침",
+  "@privacyPolicyTab": {
+    "description": "오류 창 안내 문구"
+  },
+  "settingsTooltip": "설정",
+  "@settingsTooltip": {
+    "description": "메인 메뉴의 설정 아이콘 툴팁"
+  },
+  "leaderboardTooltip": "리더보드",
+  "@leaderboardTooltip": {
+    "description": "메인 메뉴의 리더보드 아이콘 툴팁"
+  },
+  "gameRulesTooltip": "게임 규칙",
+  "@gameRulesTooltip": {
+    "description": "메인 메뉴의 게임 규칙 아이콘 툴팁"
+  },
+  "findingOpponent": "상대를 찾는 중...",
+  "@findingOpponent": {
+    "description": "매칭 페이지에서 상대를 찾고 있는 중임을 표시하는 텍스트"
+  },
+  "cancelButton": "취소",
+  "@cancelButton": {
+    "description": "매칭 페이지에서 매칭 취소 버튼 텍스트"
+  },
+  "createRoomTitle": "방 생성",
+  "@createRoomTitle": {
+    "description": "RoomModePage의 방 생성 카드 제목"
+  },
+  "joinRoomTitle": "방 입장",
+  "@joinRoomTitle": {
+    "description": "RoomModePage의 방 입장 카드 제목"
+  },
+  "enterRoomCodeLabel": "방 코드 입력",
+  "@enterRoomCodeLabel": {
+    "description": "RoomModePage의 텍스트필드 레이블"
+  },
+  "roomNotExist": "해당 방이 존재하지 않습니다.",
+  "@roomNotExist": {
+    "description": "존재하지 않는 방에 입장 시 표시할 스낵바 메시지"
+  },
+  "waitingForFriend": "친구 기다리는 중...",
+  "@waitingForFriend": {
+    "description": "방 대기 페이지에서 친구를 기다리고 있음을 표시하는 텍스트"
+  },
+  "roomCodeLabel": "방 코드",
+  "@roomCodeLabel": {
+    "description": "방 코드 레이블 텍스트"
+  },
+  "copyTooltip": "복사하기",
+  "@copyTooltip": {
+    "description": "방 코드 옆 복사 버튼 툴팁 텍스트"
+  },
+  "roomCodeCopied": "방 코드가 복사되었습니다",
+  "@roomCodeCopied": {
+    "description": "방 코드 복사 후 표시되는 스낵바 메시지"
+  },
+  "shareRoomCode": "방 코드 공유",
+  "@shareRoomCode": {
+    "description": "방 코드 공유 버튼 텍스트"
+  },
+  "settingsTitle": "설정",
+  "@settingsTitle": {
+    "description": "설정 페이지 AppBar 제목"
+  },
+  "toggleSound": "효과음 켜기/끄기",
+  "@toggleSound": {
+    "description": "설정 페이지의 효과음 토글 레이블"
+  },
+  "soundVolume": "효과음 볼륨 조절",
+  "@soundVolume": {
+    "description": "설정 페이지의 효과음 볼륨 슬라이더 레이블"
+  },
+  "themeSelection": "게임 테마 선택",
+  "@themeSelection": {
+    "description": "설정 페이지의 테마 선택 레이블"
+  },
+  "changeNickname": "닉네임 변경",
+  "@changeNickname": {
+    "description": "설정 페이지의 닉네임 변경 레이블"
+  },
+  "nicknameChanged": "닉네임이 변경되었습니다.",
+  "@nicknameChanged": {
+    "description": "닉네임 변경 후 스낵바 메시지"
+  },
+  "versionInfo": "버전 정보",
+  "@versionInfo": {
+    "description": "설정 페이지의 버전 정보 레이블"
+  },
+  "developerInfo": "개발자 정보",
+  "@developerInfo": {
+    "description": "설정 페이지의 개발자 정보 레이블"
+  },
+  "termsOfService": "이용약관",
+  "@termsOfService": {
+    "description": "설정 페이지의 이용약관 레이블"
+  },
+  "privacyPolicy": "개인정보처리방침",
+  "@privacyPolicy": {
+    "description": "설정 페이지의 개인정보처리방침 레이블"
+  },
+  "gameRulesTitle": "게임 규칙",
+  "@gameRulesTitle": {
+    "description": "튜토리얼 페이지 앱바 제목"
+  },
+  "rule1Title": "1. 말 배치하기",
+  "@rule1Title": {
+    "description": "튜토리얼 첫 번째 규칙 제목"
+  },
+  "rule1Desc": "각 플레이어는 총 4개의 말을 사용합니다.\n• 이 중 2개는 미리 정해진 위치에 자동 배치되고,\n• 나머지 2개는 원하는 칸에 자유롭게 배치합니다.",
+  "@rule1Desc": {
+    "description": "튜토리얼 첫 번째 규칙 설명"
+  },
+  "rule2Title": "2. 말 이동",
+  "@rule2Title": {
+    "description": "튜토리얼 두 번째 규칙 제목"
+  },
+  "rule2Desc": "마지막에 말을 배치한 플레이어부터 턴을 시작합니다.\n말은 상하좌우 방향으로 최대 2칸까지 이동할 수 있습니다.\n제자리 이동도 허용됩니다.",
+  "@rule2Desc": {
+    "description": "튜토리얼 두 번째 규칙 설명"
+  },
+  "rule3Title": "3. 벽 설치",
+  "@rule3Title": {
+    "description": "튜토리얼 세 번째 규칙 제목"
+  },
+  "rule3Desc": "말을 이동한 후, 각 말의 주변에 벽 1개씩 설치할 수 있습니다.\n벽으로 막힌 방향으로는 이동할 수 없습니다.\n⏱ 제한 시간 60초 안에 이동과 벽 설치를 완료하지 않으면, 무작위로 벽이 자동 설치됩니다.",
+  "@rule3Desc": {
+    "description": "튜토리얼 세 번째 규칙 설명"
+  },
+  "rule4Title": "4. 영역 분리",
+  "@rule4Title": {
+    "description": "튜토리얼 네 번째 규칙 제목"
+  },
+  "rule4Desc": "벽 설치로 인해 내 말들과 상대방 말들의 영역이 분리되면, 게임은 즉시 종료됩니다.",
+  "@rule4Desc": {
+    "description": "튜토리얼 네 번째 규칙 설명"
+  },
+  "rule5Title": "5. 점수 계산",
+  "@rule5Title": {
+    "description": "튜토리얼 다섯 번째 규칙 제목"
+  },
+  "rule5Desc": "분리된 각 영역의 칸 개수를 세어 점수를 계산합니다.\n더 많은 영역을 확보한 쪽이 승리합니다.",
+  "@rule5Desc": {
+    "description": "튜토리얼 다섯 번째 규칙 설명"
+  },
+  "secondsSuffix": "초",
+  "@secondsSuffix": {
+    "description": "타이머 뒤에 붙는 '초' 텍스트"
+  },
+  "opponentTurn": "상대방 플레이 중",
+  "@opponentTurn": {
+    "description": "AI 혹은 온라인 모드에서 상대 턴일 때 표시하는 텍스트"
+  },
+  "accountSectionTitle": "계정 관리",
+  "@accountSectionTitle": {
+    "description": "세팅 페이지"
+  },
+  "linkGoogle": "Google 계정 연결",
+  "@linkGoogle": {
+    "description": "세팅 페이지"
+  },
+  "loggedInAs": "로그인 중 : {userInfo}",
+  "@loggedInAs": {
+    "description": "Text showing which account the user is logged in with",
+    "placeholders": {
+      "userInfo": {}
+    }
+  },
+  "logout": "로그아웃",
+  "@logout": {
+    "description": "로그아웃 버튼 텍스트"
+  },
+  "anonymousUser": "익명",
+  "@anonymousUser": {
+    "description": "로그아웃 버튼 텍스트"
+  },
+  "linkApple": "Apple 계정 연결",
+  "@linkApple": {
+    "description": "apple"
+  },
+  "save": "저장",
+  "@save": {
+    "description": "save"
+  },
+  "loginMethodTitle": "로그인 방식 선택",
+  "@loginMethodTitle": {
+    "description": "Dialog title for selecting login method"
+  },
+  "continueAsGuest": "게스트로 계속하기",
+  "@continueAsGuest": {
+    "description": "Button for continuing as guest"
+  },
+  "signInWithGoogle": "Sign in with Google",
+  "@signInWithGoogle": {
+    "description": "Button for Google sign in"
+  },
+  "googleLoginFailed": "Google 로그인에 실패했습니다",
+  "@googleLoginFailed": {
+    "description": "Snackbar message when Google login fails"
+  },
+  "loginComplete": "로그인 완료",
+  "@loginComplete": {
+    "description": "Snackbar message when login is complete"
+  },
+  "logoutConfirm": "로그아웃 하시겠습니까?",
+  "@logoutConfirm": {
+    "description": ""
+  },
+  "cancel": "취소",
+  "@cancel": {
+    "description": ""
+  },
+  "guestLoginWarnTitle": "게스트 로그인 주의",
+  "@guestLoginWarnTitle": {
+    "description": "게스트 로그인 시 주의 안내 다이얼로그 제목"
+  },
+  "guestLoginWarnText": "게스트 로그인으로 진행하시는 경우, 앱 삭제 또는 재설치 시 저장된 데이터가 모두 삭제됩니다.\n\n이후 소셜 로그인으로 전환하더라도 익명 로그인 중 진행된 기록은 복구되지 않습니다.",
+  "@guestLoginWarnText": {
+    "description": "게스트 로그인 데이터 손실 안내 문구"
+  },
+  "pleaseEnterNickname": "닉네임을 입력해주세요",
+  "@pleaseEnterNickname": {
+    "description": "게스트 로그인 데이터 손실 안내 문구"
+  },
+  "nicknameTooLong":
+  "닉네임이 너무 깁니다. 한글 {maxHan}자, 영문 {maxEng}자 이내로 입력해주세요."
+  ,"@nicknameTooLong": {
+    "description": "에러 메시지: 닉네임이 최대 길이를 초과할 때",
+    "placeholders": {
+      "maxHan": {},
+      "maxEng": {}
+    }
+  },
+  "googleLoggingIn": "Google 로그인 중입니다...",
+  "welcomeWithEmail": "환영합니다, {email}님!",
+  "@welcomeWithEmail": {
+    "description": "",
+    "placeholders": {
+      "email": {}
+    }
+  }
+}

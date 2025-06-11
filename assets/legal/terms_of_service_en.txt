@@ -1,0 +1,21 @@
+Terms of Use
+
+1. Service Overview
+- This app provides online and local gaming services.
+- The service is subject to change or discontinuation without notice.
+
+2. user responsibility
+- Cheating, abnormal use (e.g., use of automated tools, etc.) may be restricted.
+- Using someone else's account or setting an inappropriate nickname is prohibited.
+
+3. Developer's Rights
+- The App content and systems are owned and operated by the Developer.
+- They may modify, discontinue, or suspend the App as they see fit.
+
+4. Limitation of Liability
+- We are not liable for any damages caused by bugs in the app or server errors.
+
+5. Miscellaneous
+- These Terms shall be interpreted in accordance with the laws of the Republic of Korea, and any changes will be notified through the in-app notice.
+
+Last modified: May 28, 2025

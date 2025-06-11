@@ -1,21 +1,43 @@
-// lib/services/auth_service.dart
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../services/user_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AuthService {
-  static Future<String> signInAnonymouslyAndGetUid() async {
-    final auth = FirebaseAuth.instance;
-    final userCredential = await auth.signInAnonymously();
-    await FirebaseAuth.instance.authStateChanges().first;
-    final user = userCredential.user;
 
-    if (user != null) {
-      print("✅ 로그인 완료: ${user.uid}");
-      return user.uid;
-    } else {
-      throw Exception("❌ 로그인 실패");
-    }
+  static Future<String> signInAnonymouslyAndGetUid() async {
+    final userCredential = await FirebaseAuth.instance.signInAnonymously();
+    return userCredential.user?.uid ?? '';
   }
 
-  // ✅ 현재 로그인된 UID를 쉽게 가져올 수 있도록 getter 추가
-  static String get uid => FirebaseAuth.instance.currentUser!.uid;
+  /// Sign in with Google and register to Firebase Authentication
+  static Future<User?> signInWithGoogle() async {
+    try {
+      // Trigger the Google Sign-In flow
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        debugPrint('❌ Google Sign-In was cancelled by user');
+        return null;
+      }
+
+      // Obtain the auth details from the request
+      final googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google user credential
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      debugPrint('✅ Google Sign-In successful, UID: ${userCredential.user?.uid}');
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('❌ Google Sign-In error: $e');
+      return null;
+    }
+  }
 }

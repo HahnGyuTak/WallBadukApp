@@ -1,12 +1,12 @@
 // lib/screens/room_waiting_page.dart
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'game_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // 추가
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../l10n/app_localizations.dart';
 
 class RoomWaitingPage extends StatefulWidget {
   final String roomId;
@@ -43,7 +43,7 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
       if (!doc.exists || hasNavigated || !mounted) return;
       
       final players = List<String>.from(doc.data()?['players'] ?? []);
-      print('👀 실시간 players 배열: $players');
+      debugPrint('👀 실시간 players 배열: $players');
       if (players.length >= 2 && !hasNavigated && mounted) {
         hasNavigated = true;
         Navigator.pop(context, 'game_started'); // ✅ result를 넘김
@@ -84,7 +84,7 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 12),
               child: Text(
-                '친구 기다리는 중...',
+                AppLocalizations.of(context)!.waitingForFriend,
                 style: const TextStyle(
                   fontFamily: 'ChungjuKimSaeng',
                   fontSize: 18,
@@ -114,7 +114,7 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '방 코드',
+                    AppLocalizations.of(context)!.roomCodeLabel,
                     style: const TextStyle(
                       fontFamily: 'ChungjuKimSaeng',
                       fontSize: 20,
@@ -140,12 +140,12 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
                       const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(Icons.copy, color: Color(0xFFD4AF37)),
-                        tooltip: '복사하기',
+                        tooltip: AppLocalizations.of(context)!.copyTooltip,
                         onPressed: () {
                           _playButtonSound();
                           Clipboard.setData(ClipboardData(text: widget.roomId));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('방 코드가 복사되었습니다')),
+                            SnackBar(content: Text(AppLocalizations.of(context)!.roomCodeCopied)),
                           );
                         },
                       ),
@@ -166,12 +166,12 @@ class _RoomWaitingPageState extends State<RoomWaitingPage> {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.share, color: Color(0xFFD4AF37)),
-                          SizedBox(width: 8),
+                        children: [
+                          const Icon(Icons.share, color: Color(0xFFD4AF37)),
+                          const SizedBox(width: 8),
                           Text(
-                            '방 코드 공유',
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.shareRoomCode,
+                            style: const TextStyle(
                               fontFamily: 'ChungjuKimSaeng',
                               color: Color(0xFFD4AF37),
                               fontWeight: FontWeight.bold,

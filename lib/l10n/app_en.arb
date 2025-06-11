@@ -1,0 +1,409 @@
+
+{
+  "@@locale": "en",
+  "appTitle": "Wall Baduk",
+  "@appTitle": {
+    "description": "Name of the app"
+  },
+  "enterNickname": "Enter your nickname",
+  "@enterNickname": {
+    "description": "Dialog title prompting the user to enter a nickname"
+  },
+  "nicknameHint": "e.g. John Doe",
+  "@nicknameHint": {
+    "description": "Hint text inside the nickname input field"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Text for confirmation buttons"
+  },
+  "difficultySelectionTitle": "AI Difficulty Level",
+  "@difficultySelectionTitle": {
+    "description": "Dialog title for choosing AI difficulty in Bot mode"
+  },
+  "difficultySelectionContent": "Please choose an AI difficulty.",
+  "@difficultySelectionContent": {
+    "description": "Dialog content for choosing AI difficulty in Bot mode"
+  },
+  "difficultyEasy": "Easy",
+  "@difficultyEasy": {
+    "description": "Button text for Easy difficulty in Bot mode"
+  },
+  "difficultyMedium": "Medium",
+  "@difficultyMedium": {
+    "description": "Button text for Medium difficulty in Bot mode"
+  },
+  "sideSelectionTitle": "Choose Your Side",
+  "@sideSelectionTitle": {
+    "description": "Dialog title for choosing which side to play in Bot mode"
+  },
+  "sideSelectionContent": "Which side would you like to use?",
+  "@sideSelectionContent": {
+    "description": "Dialog content for choosing which side to play in Bot mode"
+  },
+  "sideSelectionOptionA": "First Placement",
+  "@sideSelectionOptionA": {
+    "description": "Option A label in side selection dialog"
+  },
+  "sideSelectionOptionB": "First Move",
+  "@sideSelectionOptionB": {
+    "description": "Option B label in side selection dialog"
+  },
+  "placementInstruction": "Place your pieces",
+  "@placementInstruction": {
+    "description": "Instruction shown during the placement phase"
+  },
+  "moveInstruction": "Move a piece",
+  "@moveInstruction": {
+    "description": "Instruction shown during the move phase"
+  },
+  "wallInstruction": "Place a wall",
+  "@wallInstruction": {
+    "description": "Instruction shown during the wall placement phase"
+  },
+  "confirmExitTitle": "Notice",
+  "@confirmExitTitle": {
+    "description": "Title for dialogs notifying no wall space"
+  },
+  "separatedArea": "No wall placement space. Ending turn.",
+  "@separatedArea": {
+    "description": "Message shown when there is no space left to place a wall"
+  },
+  "confirmExitContentOnline": "Leaving counts as a forfeit. Do you want to exit?",
+  "@confirmExitContentOnline": {
+    "description": "Dialog content when backing out in online mode"
+  },
+  "confirmExitContentLocal": "Do you want to exit?",
+  "@confirmExitContentLocal": {
+    "description": "Dialog content when backing out in local mode"
+  },
+  "no": "No",
+  "@no": {
+    "description": "Text for 'No' button"
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Text for 'Yes' button"
+  },
+  "opponentLeft": "Opponent left the game. You win!",
+  "@opponentLeft": {
+    "description": "Message shown when the opponent quits"
+  },
+  "gameOverButton": "End Game",
+  "@gameOverButton": {
+    "description": "Label for the 'End Game' button on the results screen"
+  },
+  "scoreLabel": "Score: {score}",
+  "@scoreLabel": {
+    "description": "Label displaying the player's score",
+    "placeholders": {
+      "score": {}
+    }
+  },
+  "victory": "Victory!",
+  "@victory": {
+    "description": "Text indicating a win"
+  },
+  "draw": "Draw!",
+  "@draw": {
+    "description": "Text indicating a draw"
+  },
+  "leaderboardTitle": "🏆 Leaderboard",
+  "@leaderboardTitle": {
+    "description": "Title of the leaderboard screen"
+  },
+  "topRankersTab": "Top Rankers",
+  "@topRankersTab": {
+    "description": "Tab label for top-ranked players"
+  },
+  "viewMyRankingTab": "My Ranking",
+  "@viewMyRankingTab": {
+    "description": "Tab label for viewing the user’s ranking"
+  },
+  "myRecordsTab": "My Records",
+  "@myRecordsTab": {
+    "description": "Tab label for viewing the user’s match history"
+  },
+  "noData": "No data available",
+  "@noData": {
+    "description": "Message shown when there is no data"
+  },
+  "noRecentMatches": "No recent matches.",
+  "@noRecentMatches": {
+    "description": "Message shown when there are no recent matches"
+  },
+  "nicknameLabel": "Nickname: {nickname}",
+  "@nicknameLabel": {
+    "description": "Label prefix for displaying a player’s nickname",
+    "placeholders": {
+      "nickname": {}
+    }
+  },
+  "winRateLabel": "Win Rate: {winRate}%",
+  "@winRateLabel": {
+    "description": "Label for displaying win rate percentage",
+    "placeholders": {
+      "winRate": {}
+    }
+  },
+  "matchesHeading": "Recent 10 Matches",
+  "@matchesHeading": {
+    "description": "Heading above the list of recent matches"
+  },
+  "loadError": "Failed to load information.",
+  "@loadError": {
+    "description": "Error message when failing to load a text asset"
+  },
+  "legalInfoTitle": "Legal Notice",
+  "@legalInfoTitle": {
+    "description": "Title for the legal information page"
+  },
+  "developerInfoTab": "Developer Info",
+  "@developerInfoTab": {
+    "description": "Tab label for developer information"
+  },
+  "termsOfServiceTab": "Terms of Service",
+  "@termsOfServiceTab": {
+    "description": "Tab label for terms of service"
+  },
+  "privacyPolicyTab": "Privacy Policy",
+  "@privacyPolicyTab": {
+    "description": "Tab label for privacy policy"
+  },
+  "settingsTooltip": "Settings",
+  "@settingsTooltip": {
+    "description": "Tooltip for the settings icon in the main menu"
+  },
+  "leaderboardTooltip": "Leaderboard",
+  "@leaderboardTooltip": {
+    "description": "Tooltip for the leaderboard icon in the main menu"
+  },
+  "gameRulesTooltip": "Game Rules",
+  "@gameRulesTooltip": {
+    "description": "Tooltip for the game rules icon in the main menu"
+  },
+  "findingOpponent": "Finding opponent...",
+  "@findingOpponent": {
+    "description": "Text shown while searching for a match"
+  },
+  "cancelButton": "Cancel",
+  "@cancelButton": {
+    "description": "Label for the cancel matching button"
+  },
+  "createRoomTitle": "Create Room",
+  "@createRoomTitle": {
+    "description": "Title for the Create Room card in RoomModePage"
+  },
+  "joinRoomTitle": "Join Room",
+  "@joinRoomTitle": {
+    "description": "Title for the Join Room card in RoomModePage"
+  },
+  "enterRoomCodeLabel": "Room Code",
+  "@enterRoomCodeLabel": {
+    "description": "Label text for the room code input field"
+  },
+  "roomNotExist": "That room does not exist.",
+  "@roomNotExist": {
+    "description": "Snackbar message shown when trying to join a non-existent room"
+  },
+  "waitingForFriend": "Waiting for friend...",
+  "@waitingForFriend": {
+    "description": "Text shown on the waiting page when waiting for a friend"
+  },
+  "roomCodeLabel": "Room Code",
+  "@roomCodeLabel": {
+    "description": "Label text for displaying the room code"
+  },
+  "copyTooltip": "Copy",
+  "@copyTooltip": {
+    "description": "Tooltip text for the copy button next to the room code"
+  },
+  "roomCodeCopied": "Room code copied!",
+  "@roomCodeCopied": {
+    "description": "Snackbar message shown when the room code is copied"
+  },
+  "shareRoomCode": "Share Room Code",
+  "@shareRoomCode": {
+    "description": "Button label for sharing the room code"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "AppBar title for the Settings page"
+  },
+  "toggleSound": "Toggle Sound Effects",
+  "@toggleSound": {
+    "description": "Label for the sound effects toggle in Settings"
+  },
+  "soundVolume": "Adjust Sound Volume",
+  "@soundVolume": {
+    "description": "Label for the sound volume slider in Settings"
+  },
+  "themeSelection": "Select Game Theme",
+  "@themeSelection": {
+    "description": "Label for the theme selection dropdown in Settings"
+  },
+  "changeNickname": "Change Nickname",
+  "@changeNickname": {
+    "description": "Label for the nickname change field in Settings"
+  },
+  "nicknameChanged": "Nickname has been changed.",
+  "@nicknameChanged": {
+    "description": "Snackbar message shown after changing the nickname"
+  },
+  "versionInfo": "Version Info",
+  "@versionInfo": {
+    "description": "Label for displaying the app version in Settings"
+  },
+  "developerInfo": "Developer Info",
+  "@developerInfo": {
+    "description": "Label for developer information in Settings"
+  },
+  "termsOfService": "Terms of Service",
+  "@termsOfService": {
+    "description": "Label for terms of service in Settings"
+  },
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Label for privacy policy in Settings"
+  },
+  "gameRulesTitle": "Game Rules",
+  "@gameRulesTitle": {
+    "description": "AppBar title for the tutorial page"
+  },
+  "rule1Title": "1. Placing Pieces",
+  "@rule1Title": {
+    "description": "Title for the first tutorial rule"
+  },
+  "rule1Desc": "Each player has 4 pieces.\n• Two pieces are automatically placed in predetermined positions,\n• The remaining two can be freely placed on any empty spot.",
+  "@rule1Desc": {
+    "description": "Description for the first tutorial rule"
+  },
+  "rule2Title": "2. Moving Pieces",
+  "@rule2Title": {
+    "description": "Title for the second tutorial rule"
+  },
+  "rule2Desc": "The player who placed the last piece goes first.\nYou can move a piece up to two spaces vertically or horizontally.\nMoving to the same spot is also allowed.",
+  "@rule2Desc": {
+    "description": "Description for the second tutorial rule"
+  },
+  "rule3Title": "3. Placing Walls",
+  "@rule3Title": {
+    "description": "Title for the third tutorial rule"
+  },
+  "rule3Desc": "After moving a piece, you may place one wall around each piece.\nYou cannot move in a direction blocked by a wall.\n⏱ If you do not complete moving and placing a wall within 60 seconds, a random wall will be placed automatically.",
+  "@rule3Desc": {
+    "description": "Description for the third tutorial rule"
+  },
+  "rule4Title": "4. Separating Territories",
+  "@rule4Title": {
+    "description": "Title for the fourth tutorial rule"
+  },
+  "rule4Desc": "If walls separate your pieces from the opponent’s pieces into distinct territories, the game ends immediately.",
+  "@rule4Desc": {
+    "description": "Description for the fourth tutorial rule"
+  },
+  "rule5Title": "5. Scoring",
+  "@rule5Title": {
+    "description": "Title for the fifth tutorial rule"
+  },
+  "rule5Desc": "Count the number of grid cells in each separated territory to calculate scores.\nThe player with the larger territory wins.",
+  "@rule5Desc": {
+    "description": "Description for the fifth tutorial rule"
+  },
+  "secondsSuffix": "s",
+  "@secondsSuffix": {
+    "description": "Suffix appended after the timer number (seconds)"
+  },
+  "opponentTurn": "Opponent's turn",
+  "@opponentTurn": {
+    "description": "Text shown when it is the opponent’s turn in AI or online mode"
+  },
+  "accountSectionTitle": "Account Management",
+  "@accountSectionTitle": {
+    "description": "세팅 페이지"
+  },
+  "linkGoogle": "Link Google Account",
+  "@linkGoogle": {
+    "description": "세팅 페이지"
+  },
+  "loggedInAs": "Logged in as: {userInfo}",
+  "@loggedInAs": {
+    "description": "현재 로그인된 계정 정보를 보여주는 텍스트",
+    "placeholders": {
+      "userInfo": {}
+    }
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button label"
+  },
+  "anonymousUser": "Anonymous",
+  "@anonymousUser": {
+    "description": "로그아웃 버튼 텍스트"
+  },
+  "linkApple": "Link Apple",
+  "@linkApple": {
+    "description": "a"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "s"
+  },
+  "loginMethodTitle": "Login Method",
+  "@loginMethodTitle": {
+    "description": "Dialog title for selecting login method"
+  },
+  "continueAsGuest": "Guest",
+  "@continueAsGuest": {
+    "description": "Button for continuing as guest"
+  },
+  "signInWithGoogle": "Sign in with Google",
+  "@signInWithGoogle": {
+    "description": "Button for Google sign in"
+  },
+  "googleLoginFailed": "Failed to sign in with Google",
+  "@googleLoginFailed": {
+    "description": "Snackbar message when Google login fails"
+  },
+  "loginComplete": "Login complete",
+  "@loginComplete": {
+    "description": "Snackbar message when login is complete"
+  },
+  "logoutConfirm": "Do you want to log out?",
+  "@logoutConfirm": {
+    "description": ""
+  },
+  "cancel": "No",
+  "@cancel": {
+    "description": ""
+  },
+  "guestLoginWarnTitle": "Guest Login Warning",
+  "@guestLoginWarnTitle": {
+    "description": "Title for the guest‐login warning dialog"
+  },
+  "guestLoginWarnText": "If you proceed as a guest, your data will not be preserved if the app is uninstalled.\n\nEven if you later sign in with a social account, your guest session records cannot be recovered.",
+  "@guestLoginWarnText": {
+    "description": "Explanatory text warning that guest data will be lost upon app removal and cannot be restored by later social login"
+  },
+  "pleaseEnterNickname": "Please enter a nickname",
+  "@pleaseEnterNickname": {
+    "description": "게스트 로그인 데이터 손실 안내 문구"
+  },
+  "nicknameTooLong":
+  "Nickname is too long. Please enter up to {maxEng} characters."
+  ,"@nicknameTooLong": {
+    "description": "Error message when nickname exceeds maximum length for English.",
+    "placeholders": {
+      "maxHan": {},
+      "maxEng": {}
+    }
+  },
+  "googleLoggingIn": "Signing in with Google...",
+  "welcomeWithEmail": "Welcome, {email}!",
+  "@welcomeWithEmail": {
+    "description": "",
+    "placeholders": {
+      "email": {}
+    }
+  }
+}

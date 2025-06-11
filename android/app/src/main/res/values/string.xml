@@ -1,0 +1,8 @@
+<resource>
+    <string name='app_name'>WallaGo</string>
+    <string translatable="false" name="game_services_project_id">com.imtak.wall_baduk_app</string> <!-- Google Cloud Console에서 확인 -->
+
+    <string name="app_id" translatable="false">350518272438</string>
+    <!--package_name-->
+    <string name="package_name" translatable="false">com.imtak.wall_baduk_app</string>
+</resource>
