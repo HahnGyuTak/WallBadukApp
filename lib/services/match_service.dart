@@ -75,6 +75,7 @@ class MatchService {
           'playerA': sorted[0],
           'playerB': sorted[1],
           'createdAt': FieldValue.serverTimestamp(),
+          'expireAt': Timestamp.fromDate(DateTime.now().add(Duration(hours: 1))),
           'placementPhase': true,
           'turn': 'A',
         });
@@ -87,7 +88,7 @@ class MatchService {
     // 대기열에 자신 등록 (Firestore TTL: expireAt 필드 추가)
     await queueRef.doc(userId).set({
       'timestamp': FieldValue.serverTimestamp(),
-      'expireAt': DateTime.now().add(Duration(seconds: 30)),
+      'expireAt': DateTime.now().add(Duration(seconds: 180)),
     });
     debugPrint("Queue 등록 완료");
 

@@ -398,11 +398,40 @@
     }
   },
   "googleLoggingIn": "Google 로그인 중입니다...",
+  "appleLoggingIn": "Google 로그인 중입니다...",
   "welcomeWithEmail": "환영합니다, {email}님!",
   "@welcomeWithEmail": {
     "description": "",
     "placeholders": {
       "email": {}
     }
+  },
+  "signInWithApple": "Sign in with Apple",
+  "@signInWithApple": {
+    "description": ""
+  },
+  "deleteAccountConfirmTitle": "계정 삭제 확인",
+  "@deleteAccountConfirmTitle": {
+    "description": "계정 삭제 확인 다이얼로그의 제목"
+  },
+  "deleteAccountConfirmText": "정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "@deleteAccountConfirmText": {
+    "description": "계정 삭제 시 복구 불가능함을 경고하는 다이얼로그 내용"
+  },
+  "accountDeleted": "계정이 성공적으로 삭제되었습니다.",
+  "@accountDeleted": {
+    "description": "계정 삭제 성공 후 표시되는 스낵바 메시지"
+  },
+  "deleteAccountFailed": "계정을 삭제하는 데 실패했습니다. 다시 시도해주세요.",
+  "@deleteAccountFailed": {
+    "description": "계정 삭제 실패 시 표시되는 스낵바 메시지"
+  },
+  "deleteAccount": "계정 삭제",
+  "@deleteAccount": {
+    "description": "계정 삭제 버튼의 레이블"
+  },
+  "openPrivacyPolicy": "개인정보처리방침",
+  "@openPrivacyPolicy": {
+    "description": ""
   }
 }

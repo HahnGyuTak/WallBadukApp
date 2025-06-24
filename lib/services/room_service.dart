@@ -10,6 +10,7 @@ class RoomService {
       'players': [],
       'isFull': false,
       'createdAt': FieldValue.serverTimestamp(),
+      'expireAt': Timestamp.fromDate(DateTime.now().add(Duration(hours: 1))),
     });
     return doc.id;
   }
@@ -23,6 +24,7 @@ class RoomService {
       transaction.set(docRef, {
         'players': [playerId],
         'createdAt': FieldValue.serverTimestamp(),
+        'expireAt': Timestamp.fromDate(DateTime.now().add(Duration(hours: 1))),
         'placementPhase': true, // 👈 추가
         'turn': 'A',            // 👈 초기 턴 설정
         'playerA': playerId,    // 👈 첫 플레이어를 A로 지정

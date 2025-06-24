@@ -8,8 +8,9 @@ import 'package:wall_badu_app/screens/legal_info_page.dart';
 import '../services/auth_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../l10n/app_localizations.dart';
-
+import 'dart:io' show Platform;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:wall_badu_app/services/user_service.dart';
 // If using Apple Sign-In:
@@ -450,23 +451,44 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
               ),
-              // Uncomment for Apple:
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     final appleCredential = await SignInWithApple.getAppleIDCredential(
-              //       scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
-              //     );
-              //     final oauthCredential = OAuthProvider("apple.com").credential(
-              //       idToken: appleCredential.identityToken,
-              //       accessToken: appleCredential.authorizationCode,
-              //     );
-              //     await FirebaseAuth.instance.currentUser!
-              //       .linkWithCredential(oauthCredential);
-              //     setState(() => _currentUser = FirebaseAuth.instance.currentUser);
-              //   },
-              //   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
-              //   child: Text(AppLocalizations.of(context)!.linkApple),
-              // ),
+              // Apple link button
+              if (Platform.isIOS)
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final appleCredential = await SignInWithApple.getAppleIDCredential(
+                      scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+                    );
+                    final oauthCredential = OAuthProvider("apple.com").credential(
+                      idToken: appleCredential.identityToken,
+                      accessToken: appleCredential.authorizationCode,
+                    );
+                    await FirebaseAuth.instance.currentUser!
+                        .linkWithCredential(oauthCredential);
+                    setState(() => _currentUser = FirebaseAuth.instance.currentUser);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    fixedSize: const Size(120, 48),
+                  ),
+                  icon: Image.asset(
+                    'assets/apple_logo.png',
+                    width: 20,
+                    height: 20,
+                  ),
+                  label: Text(
+                    AppLocalizations.of(context)!.linkApple,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
             ] else ...[
               ListTile(
                 title: Text(
@@ -476,90 +498,206 @@ class _SettingsPageState extends State<SettingsPage> {
                   style: const TextStyle(color: Colors.white70,fontFamily: 'ChungjuKimSaeng'),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        backgroundColor: const Color(0xFF1E1A17),
-                        title: Text(
-                          AppLocalizations.of(context)!.logoutConfirm,
-                          style: const TextStyle(
-                            fontFamily: 'ChungjuKimSaeng',
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFD4AF37),
-                            shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
-                          ),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final confirmDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              backgroundColor: const Color(0xFF1E1A17),
+                              title: Text(
+                                AppLocalizations.of(context)!.deleteAccountConfirmTitle,
+                                style: const TextStyle(
+                                  fontFamily: 'ChungjuKimSaeng',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFD4AF37),
+                                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                ),
+                              ),
+                              content: Text(
+                                AppLocalizations.of(context)!.deleteAccountConfirmText,
+                                style: const TextStyle(
+                                  fontFamily: 'ChungjuKimSaeng',
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle: const TextStyle(
+                                      fontFamily: 'ChungjuKimSaeng',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    foregroundColor: const Color(0xFFD4AF37),
+                                  ),
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: Text(AppLocalizations.of(context)!.cancel),
+                                ),
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle: const TextStyle(
+                                      fontFamily: 'ChungjuKimSaeng',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    foregroundColor: const Color(0xFFD4AF37),
+                                  ),
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  child: Text(AppLocalizations.of(context)!.confirm),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (confirmDelete == true && _currentUser != null) {
+                          try {
+                            // Store the current uid before deletion
+                            final deletedUid = _currentUser!.uid;
+                            // 1. Firestore 사용자 문서부터 삭제
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(deletedUid)
+                                .delete();
+
+                            // 2. Firebase Authentication 계정 삭제
+                            await _currentUser!.delete();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(AppLocalizations.of(context)!.accountDeleted)),
+                            );
+                            setState(() => _currentUser = null);
+                            if (context.mounted) {
+                              await _promptLoginMethod(context);
+                              setState(() {
+                                _currentUser = FirebaseAuth.instance.currentUser;
+                              });
+                              // After updating _currentUser, reload settings so _nickname updates from Firestore
+                              await _loadSettings();
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(AppLocalizations.of(context)!.deleteAccountFailed)),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.red.shade900),
                         ),
-                        // content: DefaultTextStyle(
-                        //   style: const TextStyle(
-                        //     fontFamily: 'ChungjuKimSaeng',
-                        //     fontSize: 16,
-                        //     color: Colors.white,
-                        //   ),
-                        //   child: Text(
-                        //     AppLocalizations.of(context)!.logoutConfirmText ?? '',
-                        //   ),
-                        // ),
-                        actions: [
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              textStyle: const TextStyle(
-                                fontFamily: 'ChungjuKimSaeng',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              foregroundColor: const Color(0xFFD4AF37),
-                            ),
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(AppLocalizations.of(context)!.cancel),
-                          ),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              textStyle: const TextStyle(
-                                fontFamily: 'ChungjuKimSaeng',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              foregroundColor: const Color(0xFFD4AF37),
-                            ),
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(AppLocalizations.of(context)!.confirm),
-                          ),
+                        textStyle: TextStyle(fontFamily: 'ChungjuKimSaeng', fontSize: 16, fontWeight: FontWeight.bold,),
+                        elevation: 4,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.warning, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!.deleteAccount),
                         ],
-                      );
-                    },
-                  );
-                  if (confirm == true) {
-                    await FirebaseAuth.instance.signOut();
-                    setState(() => _currentUser = null);
-                    if (context.mounted) {
-                      await _promptLoginMethod(context);
-                      setState(() {
-                        _currentUser = FirebaseAuth.instance.currentUser;
-                      });
-                      // After updating _currentUser, reload settings so _nickname updates from Firestore
-                      await _loadSettings();
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3A2C1A),
-                  foregroundColor: const Color(0xFFD4AF37),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Color(0xFFD4AF37)),
+                      ),
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontFamily: 'ChungjuKimSaeng',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: 
+                    ElevatedButton(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              backgroundColor: const Color(0xFF1E1A17),
+                              title: Text(
+                                AppLocalizations.of(context)!.logoutConfirm,
+                                style: const TextStyle(
+                                  fontFamily: 'ChungjuKimSaeng',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFD4AF37),
+                                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                ),
+                              ),
+                              // content: DefaultTextStyle(
+                              //   style: const TextStyle(
+                              //     fontFamily: 'ChungjuKimSaeng',
+                              //     fontSize: 16,
+                              //     color: Colors.white,
+                              //   ),
+                              //   child: Text(
+                              //     AppLocalizations.of(context)!.logoutConfirmText ?? '',
+                              //   ),
+                              // ),
+                              actions: [
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle: const TextStyle(
+                                      fontFamily: 'ChungjuKimSaeng',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    foregroundColor: const Color(0xFFD4AF37),
+                                  ),
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: Text(AppLocalizations.of(context)!.cancel),
+                                ),
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle: const TextStyle(
+                                      fontFamily: 'ChungjuKimSaeng',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    foregroundColor: const Color(0xFFD4AF37),
+                                  ),
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  child: Text(AppLocalizations.of(context)!.confirm),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (confirm == true) {
+                          await FirebaseAuth.instance.signOut();
+                          setState(() => _currentUser = null);
+                          if (context.mounted) {
+                            await _promptLoginMethod(context);
+                            setState(() {
+                              _currentUser = FirebaseAuth.instance.currentUser;
+                            });
+                            // After updating _currentUser, reload settings so _nickname updates from Firestore
+                            await _loadSettings();
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3A2C1A),
+                        foregroundColor: const Color(0xFFD4AF37),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFFD4AF37)),
+                        ),
+                        textStyle: const TextStyle(
+                          fontFamily: 'ChungjuKimSaeng',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      child: Text(AppLocalizations.of(context)!.logout),
+                    ),
                   ),
-                ),
-                child: Text(AppLocalizations.of(context)!.logout),
+                ],
               ),
             ],
             Divider(color: Colors.brown.shade700),
@@ -806,6 +944,32 @@ Future<void> _promptLoginMethod(BuildContext context) async {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.grey),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    elevation: 1,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    fixedSize: const Size(240, 48),
+                  ),
+                  onPressed: () => Navigator.of(context).pop('apple'),
+                  icon: Image.asset(
+                    'assets/apple_logo.png',
+                    width: 18,
+                    height: 18,
+                  ),
+                  label: Text(
+                    AppLocalizations.of(context)!.signInWithApple,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -833,6 +997,34 @@ Future<void> _promptLoginMethod(BuildContext context) async {
         continue;
       } else {
         // 로그인 성공 후 이메일 안내 스낵바
+        final email = user.email ?? '';
+        if (email.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.welcomeWithEmail(email)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } else if (loginMethod == 'apple') {
+      // 로그인 중 안내 스낵바 (reuse google text for now, or add new if available)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.appleLoggingIn),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      user = await AuthService.signInWithApple?.call();
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.googleLoginFailed),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        continue;
+      } else {
         final email = user.email ?? '';
         if (email.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -925,7 +1117,11 @@ Future<void> _promptLoginMethod(BuildContext context) async {
         await UserService.ensureUserDocumentExists(
           user.uid,
           nickname,
-          loginMethod: loginMethod == 'google' ? 'google' : 'anonymous',
+          loginMethod: loginMethod == 'google'
+              ? 'google'
+              : loginMethod == 'apple'
+                  ? 'apple'
+                  : 'anonymous',
         );
       }
     }

@@ -39,8 +39,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = 11     // 정수, 업데이트할 때마다 +1
-        versionName = "1.0.9" // 사용자에게 보일 버전 문자열
+        versionCode = 17   // 정수, 업데이트할 때마다 +1
+        versionName = "1.1.5" // 사용자에게 보일 버전 문자열
     }
     dependencies {
         // Import the BoM for the Firebase platform
@@ -49,6 +49,7 @@ android {
         // When using the BoM, you don't specify versions in Firebase library dependencies
         implementation("com.google.firebase:firebase-firestore")
         implementation("com.google.firebase:firebase-analytics")
+        implementation("com.google.android.gms:play-services-auth:21.0.0")
     }
     signingConfigs {
         create("release") {
@@ -74,3 +75,5 @@ android {
 flutter {
     source = "../.."
 }
+
+apply(plugin = "com.google.gms.google-services")

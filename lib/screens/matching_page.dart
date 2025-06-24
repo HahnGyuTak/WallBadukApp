@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../l10n/app_localizations.dart';
-
+import 'package:flutter/widgets.dart';
 
 
 
@@ -19,7 +19,7 @@ class MatchingPage extends StatefulWidget {
   State<MatchingPage> createState() => _MatchingPageState();
 }
 
-class _MatchingPageState extends State<MatchingPage> {
+class _MatchingPageState extends State<MatchingPage> with WidgetsBindingObserver {
   late final String userId;
   final AudioPlayer _audioPlayer = AudioPlayer();
   Future<void> _playButtonSound() async {
@@ -35,6 +35,7 @@ class _MatchingPageState extends State<MatchingPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ensureLoginAndStartMatching();
   }
 
@@ -84,7 +85,12 @@ class _MatchingPageState extends State<MatchingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        await _cancelMatching();
+        return true;
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Center(
         child: Column(
@@ -135,6 +141,21 @@ class _MatchingPageState extends State<MatchingPage> {
           ],
         ),
       ),
+    ),
     );
+  }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When app goes to background or is detached, cancel matching
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      _cancelMatching();
+    }
   }
 }

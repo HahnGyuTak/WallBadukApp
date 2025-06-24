@@ -312,7 +312,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get googleLoggingIn => 'Google 로그인 중입니다...';
 
   @override
+  String get appleLoggingIn => 'Google 로그인 중입니다...';
+
+  @override
   String welcomeWithEmail(Object email) {
     return '환영합니다, $email님!';
   }
+
+  @override
+  String get signInWithApple => 'Sign in with Apple';
+
+  @override
+  String get deleteAccountConfirmTitle => '계정 삭제 확인';
+
+  @override
+  String get deleteAccountConfirmText => '정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get accountDeleted => '계정이 성공적으로 삭제되었습니다.';
+
+  @override
+  String get deleteAccountFailed => '계정을 삭제하는 데 실패했습니다. 다시 시도해주세요.';
+
+  @override
+  String get deleteAccount => '계정 삭제';
+
+  @override
+  String get openPrivacyPolicy => '개인정보처리방침';
 }

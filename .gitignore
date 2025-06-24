@@ -57,3 +57,18 @@ android/app/key.jks
 ios/Runner/GoogleService-Info.plist
 ios/Pods/
 ios/Runner.xcworkspace
+
+node_modules
+
+ios_backup2/
+
+wallbaduk-firebase-adminsdk-fbsvc-4466ff53cc.json
+
+*.json
+
+# Local Google Cloud SDK
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
+
+# Firebase Functions dependencies
+functions/node_modules/

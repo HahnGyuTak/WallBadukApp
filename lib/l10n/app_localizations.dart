@@ -674,11 +674,59 @@ abstract class AppLocalizations {
   /// **'Google 로그인 중입니다...'**
   String get googleLoggingIn;
 
+  /// No description provided for @appleLoggingIn.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google 로그인 중입니다...'**
+  String get appleLoggingIn;
+
   ///
   ///
   /// In ko, this message translates to:
   /// **'환영합니다, {email}님!'**
   String welcomeWithEmail(Object email);
+
+  ///
+  ///
+  /// In ko, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInWithApple;
+
+  /// 계정 삭제 확인 다이얼로그의 제목
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제 확인'**
+  String get deleteAccountConfirmTitle;
+
+  /// 계정 삭제 시 복구 불가능함을 경고하는 다이얼로그 내용
+  ///
+  /// In ko, this message translates to:
+  /// **'정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'**
+  String get deleteAccountConfirmText;
+
+  /// 계정 삭제 성공 후 표시되는 스낵바 메시지
+  ///
+  /// In ko, this message translates to:
+  /// **'계정이 성공적으로 삭제되었습니다.'**
+  String get accountDeleted;
+
+  /// 계정 삭제 실패 시 표시되는 스낵바 메시지
+  ///
+  /// In ko, this message translates to:
+  /// **'계정을 삭제하는 데 실패했습니다. 다시 시도해주세요.'**
+  String get deleteAccountFailed;
+
+  /// 계정 삭제 버튼의 레이블
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제'**
+  String get deleteAccount;
+
+  ///
+  ///
+  /// In ko, this message translates to:
+  /// **'개인정보처리방침'**
+  String get openPrivacyPolicy;
 }
 
 class _AppLocalizationsDelegate

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:io' show Platform;
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'game_page.dart';
 import 'tutorial_page.dart';
@@ -28,11 +30,15 @@ class MainMenuPage extends StatefulWidget {
 
 class _MainMenuPageState extends State<MainMenuPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  late final String _imgSuffix;
+  bool _initialized = false;
 
   Future<bool> _isConnected() async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
   }
 
   void _showNetworkSnackBar() {
@@ -53,14 +59,22 @@ class _MainMenuPageState extends State<MainMenuPage> {
     await _audioPlayer.play(AssetSource('button.mp3'));
   }
 
+  Future<void> _initialize() async {
+    await initializeUser(context);
+    // Remove splash after user initialization
+    // ignore: use_build_context_synchronously
+    FlutterNativeSplash.remove();
+    if (mounted) {
+      setState(() {
+        _initialized = true;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initializeUser(context);
-    });
-    final isEnLocale = WidgetsBinding.instance.window.locale.languageCode == 'en';
-    _imgSuffix = isEnLocale ? '_en' : '';
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
   }
 
   @override
@@ -71,6 +85,16 @@ class _MainMenuPageState extends State<MainMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_initialized) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final isEnLocale = Localizations.localeOf(context).languageCode == 'en';
+    final _imgSuffix = isEnLocale ? '_en' : '';
+
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Color.fromARGB(255, 64, 63, 60)), 
@@ -221,8 +245,13 @@ Future<void> initializeUser(BuildContext context) async {
   }
 
   User? user = FirebaseAuth.instance.currentUser;
+
+  // Check Google sign-in status
   final googleSignIn = GoogleSignIn();
   final isGoogleSignedIn = await googleSignIn.isSignedIn();
+
+  // Check Apple sign-in by provider data
+  final isAppleSignedIn = user?.providerData.any((p) => p.providerId == 'apple.com') ?? false;
 
   // 이미 로그인된 경우 처리 (익명: expireAt 갱신)
   if (user != null) {
@@ -232,7 +261,8 @@ Future<void> initializeUser(BuildContext context) async {
       await userRef.set({'expireAt': expireDate}, SetOptions(merge: true));
       return;
     }
-    if (isGoogleSignedIn) {
+    // Google 또는 Apple 로그인 상태면 리턴
+    if (isGoogleSignedIn || isAppleSignedIn) {
       return;
     }
   }
@@ -371,6 +401,35 @@ Future<void> initializeUser(BuildContext context) async {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                if (Platform.isIOS)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      fixedSize: const Size(240, 48),
+                    
+                    ),
+                    onPressed: () => Navigator.of(context).pop('apple'),
+                    icon: Image.asset(
+                      'assets/apple_logo.png',
+                      width: 20,
+                      height: 20,
+                    ),
+                    label: Text(
+                      AppLocalizations.of(context)!.signInWithApple,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -398,6 +457,33 @@ Future<void> initializeUser(BuildContext context) async {
         continue;
       } else {
         // 로그인 성공 후 이메일 안내 스낵바
+        final email = user.email ?? '';
+        if (email.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.welcomeWithEmail(email)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } else if (loginMethod == 'apple') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.googleLoggingIn),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      user = await AuthService.signInWithApple?.call();
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.googleLoginFailed),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        continue;
+      } else {
         final email = user.email ?? '';
         if (email.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -500,7 +586,11 @@ Future<void> initializeUser(BuildContext context) async {
     await UserService.ensureUserDocumentExists(
       uid,
       nickname,
-      loginMethod: loginMethod == 'google' ? 'google' : 'anonymous',
+      loginMethod: loginMethod == 'google'
+          ? 'google'
+          : loginMethod == 'apple'
+              ? 'apple'
+              : 'anonymous',
     );
   }
   

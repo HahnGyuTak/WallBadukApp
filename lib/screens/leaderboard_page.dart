@@ -64,7 +64,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Wins: ${data['wins']}  Losses: ${data['losses']}  Draws: ${data['draws'] ?? 0}'),
+                      Text('W: ${data['wins']}  L: ${data['losses']}  D: ${data['draws'] ?? 0}'),
                       Text(
                         AppLocalizations.of(context)!.winRateLabel(
                           ((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)
@@ -150,7 +150,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with SingleTickerProv
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Wins: ${data['wins']}  Losses: ${data['losses']}  Draws: ${data['draws'] ?? 0}'),
+                      Text('W: ${data['wins']}  L: ${data['losses']}  D: ${data['draws'] ?? 0}'),
                       Text(
                         AppLocalizations.of(context)!.winRateLabel(
                           ((data['wins'] + data['losses'] + (data['draws'] ?? 0)) > 0)

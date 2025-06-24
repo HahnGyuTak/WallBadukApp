@@ -1,7 +1,6 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 
 
@@ -139,36 +138,28 @@ class _PrivacyPolicy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localeCode = Localizations.localeOf(context).languageCode;
-    final assetPath = localeCode == 'ko'
-        ? 'assets/legal/privacy_policy_ko.txt'
-        : 'assets/legal/privacy_policy_en.txt';
-    return FutureBuilder<String>(
-      future: loadAsset(assetPath),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text(
-            AppLocalizations.of(context)!.loadError,
-            style: const TextStyle(color: Colors.white),
-          ));
-        } else {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Text(
-                snapshot.data ?? '',
-                style: const TextStyle(
-                  fontFamily: 'ChungjuKimSaeng',
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          );
-        }
-      },
+    return Center(
+      child: TextButton.icon(
+        onPressed: () async {
+          const url = 'https://hahngyutak.github.io/WallaGo/privacy';
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(AppLocalizations.of(context)!.loadError)),
+            );
+          }
+        },
+        icon: Icon(Icons.open_in_browser, color: Color(0xFFD4AF37)),
+        label: Text(
+          AppLocalizations.of(context)?.openPrivacyPolicy ?? '개인정보처리방침 열기',
+          style: const TextStyle(
+            fontFamily: 'ChungjuKimSaeng',
+            color: Color(0xFFD4AF37),
+            fontSize: 16,
+          ),
+        ),
+      ),
     );
   }
 }

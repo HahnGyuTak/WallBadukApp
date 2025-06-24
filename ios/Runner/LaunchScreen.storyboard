@@ -9,7 +9,7 @@
           <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
           <color key="backgroundColor" red="0.12" green="0.1" blue="0.08" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
           <subviews>
-            <imageView contentMode="scaleAspectFit" image="logo" translatesAutoresizingMaskIntoConstraints="NO" id="splashImage"/>
+            <imageView contentMode="scaleAspectFit" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="splashImage"/>
           </subviews>
           <constraints>
             <constraint firstItem="splashImage" firstAttribute="centerX" secondItem="splashView" secondAttribute="centerX" id="centerX"/>

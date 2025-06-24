@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.5+4
+version: 1.1.0+15
 
 environment:
   sdk: ^3.8.0
@@ -31,18 +31,21 @@ dependencies:
   flutter:
     sdk: flutter
   collection: ^1.17.2
-  firebase_core: ^3.8.1
-  firebase_analytics: ^11.4.6
+  firebase_core: ^3.14.0
+  firebase_analytics: ^11.5.0
   cloud_firestore: ^5.6.8
+  # firebase_messaging: ^15.2.7
   firebase_auth: ^5.5.4
   uuid: ^4.2.2 
   share_plus: ^11.0.0
-  audioplayers: ^6.4.0   # 또는 최신 버전
+  audioplayers: ^6.5.0   # 또는 최신 버전
   shared_preferences: ^2.5.3
   cloud_functions: ^5.5.1
   package_info_plus: ^8.3.0
-  connectivity_plus: ^6.1.4       # 네트워크 상태 감지
   google_sign_in: ^6.3.0
+  sign_in_with_apple: ^7.0.1
+  # app_tracking_transparency: ^2.0.6+1
+  url_launcher: ^6.3.1
   # audioplayers_darwin: ^6.2.0
 
   flutter_localizations: 
@@ -161,6 +164,7 @@ flutter:
     - assets/legal/privacy_policy_en.txt
 
     - assets/google_logo.png
+    - assets/apple_logo.png
 
 
   fonts:
@@ -184,7 +188,7 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "lib/img/app_icon.png"
+  image_path: "lib/img/app_icon_ios.png"
 
 flutter_native_splash:
   color: "#ffffff"                    # 배경 색상

@@ -314,7 +314,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get googleLoggingIn => 'Signing in with Google...';
 
   @override
+  String get appleLoggingIn => 'Google 로그인 중입니다...';
+
+  @override
   String welcomeWithEmail(Object email) {
     return 'Welcome, $email!';
   }
+
+  @override
+  String get signInWithApple => 'Sign with in Apple';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Confirm Account Deletion';
+
+  @override
+  String get deleteAccountConfirmText =>
+      'Are you sure you want to delete your account? This action cannot be undone.';
+
+  @override
+  String get accountDeleted => 'Your account has been successfully deleted.';
+
+  @override
+  String get deleteAccountFailed =>
+      'Failed to delete your account. Please try again.';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get openPrivacyPolicy => 'Privacy Policy';
 }
